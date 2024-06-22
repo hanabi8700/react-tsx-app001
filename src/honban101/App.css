@@ -1,0 +1,63 @@
+@charset "utf-8";
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  /* paddingとborderを幅と高さに含める */
+}
+body {
+  background-color: #ddd;
+  font-size: 0.8em;
+  /* 親要素を基準として0.8文字分の大きさ */
+  /* ex. 20px*0.8em=16px */
+  /* ex. 100%*0.8em=80%　*/
+}
+header {
+  width: 100%;
+  padding: 15px 0;
+  /* margin: 0 auto; */
+  /* で要素自体を中央右寄せにしたこと */
+  /* text-align: center; */
+  /* で文字を中央寄せにしたこと */
+  /* height: 100px; */
+  background-color: #337079;
+  color: white;
+}
+.headline {
+  font-size: x-large;
+}
+.nav-list {
+  /* line-height: 100px; */
+  display: flex;
+  align-items: baseline;
+  list-style: none;
+}
+.nav-list-item {
+  margin: 0 20px;
+  /* flex: 1 calc((100% - 30%) / 4); */
+  /* flex: 1 auto; */
+  white-space: nowrap;
+}
+.nav-list-item a {
+  color: white;
+  text-decoration: none;
+}
+.nav-list-item> a:hover {
+  /* color: skyblue; */
+  font-size: 1.8em;/*文字サイズ1.8倍*/
+  font-weight: bold;
+}
+
+footer {
+  width: 100%;
+  height: 100px;
+  background-color: #174a5c;
+  color: white;
+  text-align: center;
+  /* で文字を中央寄せに指定すること */
+}
+ul.footer-menu li {
+  display: inline;
+  /* でインライン要素にすること */
+}
+/* -------------------------------------- */

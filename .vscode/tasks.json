@@ -1,0 +1,30 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  // メニュー→Terminal（ターミナル）→Configure Tasks（タスクの構成）→Otherするとtasks.jsonが作成されます。
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "echo",
+      "type": "shell",
+      "command": "echo Hello"
+    },
+    {
+      "type": "npm", // npm によるタスク実行
+      "script": "dev", // 実行する npm スクリプト名
+      // "path": "react-tsx-app001",
+      "options": {
+        // cwd コマンドを実行するディレクトリを指定{index.html}
+        "cwd": "${workspaceFolder}"
+        // env	環境変数を指定
+      },
+      "problemMatcher": [],
+      "label": "npm: dev - react-tsx-app001", // コマンドパレットに表示される名前
+      "detail": "vite", // その下に表示される説明文
+      "group": {
+        "kind": "build", // ビルドタスクとして認識させる
+        "isDefault": true // Cmd + Shift + B で即実行
+      }
+    },
+  ]
+}
