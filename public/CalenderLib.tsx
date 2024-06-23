@@ -449,3 +449,26 @@ export const getWeekDay7 = (
     });
   return dayList;
 };
+
+//---------------------
+//join... 配列をつなぐ
+//---------------------
+type profileXXX = {
+  name: string;
+  date?: string;
+}[];
+export const joinList = (newDataset: profileXXX): string[] => {
+  const dataString =
+    newDataset.length === 0
+      ? []
+      : newDataset
+          .map((data) => {
+            return data.name;
+          })
+          .reduce((prev: string[], curr: string): string[] => {
+            return [...prev, curr]; //[...prev, curr, ' ']
+          }, [])
+          //.slice(0, -1); //最後のセパレター削除["友引"," ","芒種"]
+
+  return dataString;
+};
