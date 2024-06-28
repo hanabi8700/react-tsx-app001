@@ -6,13 +6,19 @@ const Root = () => {
         <ul className="nav-list">
           <li className="nav-list-item headline">はなまる日付けプロトタイプ</li>
           <li className="nav-list-item">
-            <Link to="/">ホーム</Link>
+            <Link to="./">ホーム</Link>
           </li>
           <li className="nav-list-item">
             <Link to="calendar">カレンダー</Link>
           </li>
           <li className="nav-list-item">
             <Link to="about">About</Link>
+          </li>
+          <li className="nav-list-item">
+            <Link to="login">Login</Link>
+          </li>
+          <li className="nav-list-item">
+            <Link to="ng">LYU</Link>
           </li>
         </ul>
       </header>

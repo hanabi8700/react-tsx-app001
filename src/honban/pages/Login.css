@@ -45,8 +45,7 @@
   box-sizing: border-box;
 }
 .body2 input:focus
-/* input:focus-visible */
-{
+/* input:focus-visible */ {
   background-color: #ffffcc; /* 背景色 */
   border: 1px solid red; /* 枠線 */
 }

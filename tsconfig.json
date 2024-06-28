@@ -23,12 +23,13 @@
     /* import Alias 追加*/
     /* baseUrl … 絶対パス指定する場合の起点をどこにするか */
     /* paths   … baseUrl からの相対パスでマッピングされるパスを指定できる*/
-    "baseUrl": "./",
+    "baseUrl": "src",
     "paths": {
       "@/*": ["src/*"],
-      "~/*": ["public/*"]
+      "~/*": ["../public/*"]
     }
   },
   "include": ["src", ".eslintrc.cjs", "public/CalenderLib.tsx"],
+  "exclude": ["src/sample*/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

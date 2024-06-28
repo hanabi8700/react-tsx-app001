@@ -42,9 +42,9 @@ header {
   color: white;
   text-decoration: none;
 }
-.nav-list-item> a:hover {
+.nav-list-item > a:hover {
   /* color: skyblue; */
-  font-size: 1.8em;/*文字サイズ1.8倍*/
+  font-size: 1.8em; /*文字サイズ1.8倍*/
   font-weight: bold;
 }
 
