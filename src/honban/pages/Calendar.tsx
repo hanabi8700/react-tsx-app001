@@ -1,8 +1,8 @@
 //import React from 'react';
 import { useCallback, useState } from 'react';
-// import * as calc from '../../../public/CalenderLib';
 import * as calc from '~/CalenderLib';
 import './Calendar.css';
+import Holiday from './Holiday';
 
 type holidayList = {
   date: string;
@@ -11,6 +11,7 @@ type holidayList = {
   order: number;
 }[];
 // １週間のバックグラウンド関数
+// ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
 const weekDayBG = (ctDate: string, weeksNum: number, dataset: holidayList) => {
   const weekdayArray = calc.getWeekDay7(ctDate, weeksNum);
   //today.format="2024/06/05"
@@ -19,34 +20,44 @@ const weekDayBG = (ctDate: string, weeksNum: number, dataset: holidayList) => {
   let newDataset = -1;
   return weekdayArray.map((d, index) => {
     let cName = 'day flex1 ';
+    //祝日
     newDataset = dataset.findIndex(
       (data) => data.date === d.date && data.holiday,
     );
-    cName += newDataset > 0 ? 'holiday ' : '';
-    cName += d.date === dataset[0].date ? 'today ' : '';
+    cName += newDataset > -1 ? 'holiday ' : '';
+    //当日
+    newDataset = dataset.findIndex(
+      (data) => data.date === d.date && data.name === 'today',
+    );
+    cName += newDataset > -1 ? 'today ' : '';
     cName += d.inMonth ? 'dayly ' : 'outmonth ';
     return <div key={index} className={cName}></div>;
   });
 };
 // 1週間のフォアグラウンド関数
+// ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
 const weekDayFG = (ctDate: string, weeksNum: number, dataset: holidayList) => {
   const weekdayArray = calc.getWeekDay7(ctDate, weeksNum);
   //today.format="2024/06/05"
   // let newDataset:string[];
   const output2List = weekdayArray.map((d, index) => {
-    const bt = <button type="button">{d.dateOnData}</button>;
+    const bt = (
+      <button type="button" name={d.date}>
+        {d.dateOnData}
+      </button>
+    ); //日にち
     //newDataset = dataset.findIndex((data) => data === d.date);
-    let newDataset = dataset.filter((data, index) => {
-      return data.date === d.date && index != 0 && data.order < 100;
-      //12節句
+    let newDataset = dataset.filter((data) => {
+      return data.date === d.date && 9 < data.order && data.order < 100;
+      //六曜（ろくよう、りくよう）dataset 1Day
     });
-    const array1 = calc.joinList(newDataset);
+    const array1 = calc.joinList(newDataset); //nameだけ取り出す
     //
     newDataset = dataset.filter((data) => {
       return data.date === d.date && data.holiday && data.order >= 100;
-      //祝日
+      //祝日 dataset 1Day
     });
-    const array2 = calc.joinList(newDataset);
+    const array2 = calc.joinList(newDataset); //nameだけ取り出す
     const newArray = array1.concat(array2);
 
     const sp = <span>{newArray.join()}</span>;
@@ -95,38 +106,35 @@ export const Calendar = () => {
     calc.getAddMonthDate2(calc.getDateWithString(date5), countx, true) as Date,
   );
 
+  //--------------------------------------------------------
+  // date.toLocaleDateString(); // 2020/5/13
+  //--------------------------------------------------------
   const calendarDates = calc.CalenderLib(calendarDate);
-  const ddYear = calendarDates.currentYear as number;
-  const ddMonth = calendarDates.currentMonth as number;
-  const ddWareki = calc.JapaneseCalendar(calendarDates.firstDate as Date);
+  const ddYear = calendarDates.currentYear;
+  const ddMonth = calendarDates.currentMonth;
+  const ddWareki = calc.JapaneseCalendar(calendarDates.firstDate);
 
-  // index 0:きょう  1~n:祝日
-  const holidayList = [
+  // index 0:きょう  1~n:祝日、六曜
+  let holidayList = [
     {
-      date: calc.getDateWithString(calendarDates.today as Date),
+      date: calc.getDateWithString(calendarDates.today),
       name: 'today',
       holiday: false,
       order: 0,
     },
-    {
-      date: '2024/06/20',
-      name: '友引',
-      holiday: false,
-      order: 10,
-    },
-    {
-      date: '2024/06/20',
-      name: '芒種',
-      holiday: false,
-      order: 10,
-    },
-    {
-      date: '2024/06/13',
-      name: '祝日',
-      holiday: true,
-      order: 401,
-    },
+
+    // {
+    //   date: '2024/07/13',
+    //   name: '祝日',
+    //   holiday: true,
+    //   order: 401,
+    // },
   ];
+
+  // ホリデイ祝日、六曜、特別記念日など
+  const result2 = Holiday(calendarDate, holidayList);
+  holidayList = holidayList.concat(result2); //配列結合
+
 
   // -----------------------------Display-Calendar-------------------------------------
   return (
@@ -182,6 +190,7 @@ export const Calendar = () => {
             {/* <input type="button" onClick={history.back()} value="戻る" /> */}
           </form>
         </div>
+        {/* //------------------カレンダー-------------------- */}
         <div className="calendar5">
           <div className="ht-row-monthly-view">
             <div className="weekday2 flex2">
@@ -195,14 +204,23 @@ export const Calendar = () => {
               })}
               {/* <div className="item flex1">日</div>  */}
             </div>
+            {/* １週目 */}
             <div className="ht-row-monthly possec flex2 date3">
               <div className="ht-row-bg posabs flex2">
                 {/* 背景色 */}
-                {weekDayBG(calendarDates.firstDate as string, 0, holidayList)}
+                {weekDayBG(
+                  calendarDates.firstDateStr as string,
+                  0,
+                  holidayList,
+                )}
                 {/* <div className="day flex1 holiday today"></div> */}
               </div>
               <div className="ht-row-container possec2">
-                {weekDayFG(calendarDates.firstDate as string, 0, holidayList)}
+                {weekDayFG(
+                  calendarDates.firstDateStr as string,
+                  0,
+                  holidayList,
+                )}
 
                 {/* <div className="ht-row flex2">
                   <div className="day flex1">
@@ -267,62 +285,126 @@ export const Calendar = () => {
                 </div> */}
               </div>
             </div>
+            {/* ２週目 */}
             <div className="ht-row-monthly possec flex2 date3">
               <div className="ht-row-bg posabs flex2">
-                {weekDayBG(calendarDates.firstDate as string, 1, holidayList)}
+                {weekDayBG(
+                  calendarDates.firstDateStr as string,
+                  1,
+                  holidayList,
+                )}
               </div>
               <div className="ht-row-container possec2">
-                {weekDayFG(calendarDates.firstDate as string, 1, holidayList)}
+                {weekDayFG(
+                  calendarDates.firstDateStr as string,
+                  1,
+                  holidayList,
+                )}
               </div>
             </div>
+            {/* ３週目 */}
             <div className="ht-row-monthly possec flex2 date3">
               <div className="ht-row-bg posabs flex2">
-                {weekDayBG(calendarDates.firstDate as string, 2, holidayList)}
+                {weekDayBG(
+                  calendarDates.firstDateStr as string,
+                  2,
+                  holidayList,
+                )}
               </div>
               <div className="ht-row-container possec2">
-                {weekDayFG(calendarDates.firstDate as string, 2, holidayList)}
+                {weekDayFG(
+                  calendarDates.firstDateStr as string,
+                  2,
+                  holidayList,
+                )}
               </div>
             </div>
+            {/* ４週目 */}
             <div className="ht-row-monthly possec flex2 date3">
               <div className="ht-row-bg posabs flex2">
-                {weekDayBG(calendarDates.firstDate as string, 3, holidayList)}
+                {weekDayBG(
+                  calendarDates.firstDateStr as string,
+                  3,
+                  holidayList,
+                )}
               </div>
               <div className="ht-row-container possec2">
-                {weekDayFG(calendarDates.firstDate as string, 3, holidayList)}
+                {weekDayFG(
+                  calendarDates.firstDateStr as string,
+                  3,
+                  holidayList,
+                )}
               </div>
             </div>
+            {/* ５週目 */}
             <div className="ht-row-monthly possec flex2 date3">
               <div className="ht-row-bg posabs flex2">
-                {weekDayBG(calendarDates.firstDate as string, 4, holidayList)}
+                {weekDayBG(
+                  calendarDates.firstDateStr as string,
+                  4,
+                  holidayList,
+                )}
               </div>
               <div className="ht-row-container possec2">
-                {weekDayFG(calendarDates.firstDate as string, 4, holidayList)}
+                {weekDayFG(
+                  calendarDates.firstDateStr as string,
+                  4,
+                  holidayList,
+                )}
               </div>
             </div>
+            {/* ６週目 */}
             <div className="ht-row-monthly possec flex2 date3">
               <div className="ht-row-bg posabs flex2">
-                {weekDayBG(calendarDates.firstDate as string, 5, holidayList)}
+                {weekDayBG(
+                  calendarDates.firstDateStr as string,
+                  5,
+                  holidayList,
+                )}
               </div>
               <div className="ht-row-container possec2">
-                {weekDayFG(calendarDates.firstDate as string, 5, holidayList)}
+                {weekDayFG(
+                  calendarDates.firstDateStr as string,
+                  5,
+                  holidayList,
+                )}
               </div>
             </div>
+            {/* ７週目 */}
             <div className="ht-row-monthly possec flex2 date3">
               <div className="ht-row-bg posabs flex2">
-                {weekDayBG(calendarDates.firstDate as string, 6, holidayList)}
+                {weekDayBG(
+                  calendarDates.firstDateStr as string,
+                  6,
+                  holidayList,
+                )}
               </div>
               <div className="ht-row-container possec2">
-                {weekDayFG(calendarDates.firstDate as string, 6, holidayList)}
+                {weekDayFG(
+                  calendarDates.firstDateStr as string,
+                  6,
+                  holidayList,
+                )}
               </div>
             </div>
+            {/* ８週目 */}
             <div className="ht-row-monthly possec flex2 date3">
               <div className="ht-row-bg posabs flex2">
-                {weekDayBG(calendarDates.firstDate as string, 7, holidayList)}
+                {weekDayBG(
+                  calendarDates.firstDateStr as string,
+                  7,
+                  holidayList,
+                )}
               </div>
               <div className="ht-row-container possec2">
-                {weekDayFG(calendarDates.firstDate as string, 7, holidayList)}
+                {weekDayFG(
+                  calendarDates.firstDateStr as string,
+                  7,
+                  holidayList,
+                )}
               </div>
             </div>
+            {/* End */}
           </div>
         </div>
       </div>

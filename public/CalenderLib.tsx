@@ -16,29 +16,29 @@
 // 7日後の日付を計算
 // const sevenDaysLater = new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-export type ObjectLiteralLike0 = {
-  [index: string]: string | number | Date;
-};
+export interface ObjectLiteralLike0 {
+  today: Date;
+  date: Date;
+  currentMonth: number;
+  currentYear: number;
+  firstDate: Date;
+  lastDate: Date;
+  firstDateStr?: string;
+  lastDayIndex?: number;
+  lastDayDate?: number;
+  prevLastDate?: Date;
+  prevLastDayDate?: number;
+  prevDateLastWeek?: Date;
+  nextDateFirstWeek?: Date;
+  // [index: string]: string | number | Date;
+}
 export type EventType = {
   type: number;
   date: Date[];
   data010: number;
   [index: string]: number | Date[];
 };
-const dateStructure: ObjectLiteralLike0 = {
-  today: '',
-  date: '',
-  currentMonth: '',
-  currentYear: '',
-  firstDate: '',
-  lastDate: '',
-  lastDayIndex: '',
-  lastDayDate: '',
-  prevLastDate: '',
-  prevLastDayDate: '',
-  prevDateLastWeek: '',
-  nextDateFirstWeek: '',
-};
+
 //****************************************************
 // CalenderLib() or CalenderLib("2024/04/01")
 export const CalenderLib = (dateString1: string = '') => {
@@ -50,13 +50,15 @@ export const CalenderLib = (dateString1: string = '') => {
 
   // get current year
   const currentYear = date.getFullYear();
-
-  dateStructure.today = new Date();
-  dateStructure.date = date;
-  dateStructure.currentMonth = currentMonth + 1;
-  dateStructure.currentYear = currentYear;
-  dateStructure.firstDate = new Date(currentYear, currentMonth, 1);
-  dateStructure.lastDate = new Date(currentYear, currentMonth + 1, 0);
+  const dateStructure: ObjectLiteralLike0 = {
+    today: new Date(),
+    date: date,
+    currentMonth: currentMonth + 1,
+    currentYear: currentYear,
+    firstDate: new Date(currentYear, currentMonth, 1),
+    lastDate: new Date(currentYear, currentMonth + 1, 0),
+  };
+  dateStructure.firstDateStr = getDateWithString(dateStructure.firstDate);
   // getDay():曜日を0から6の整数で取得する;
   dateStructure.lastDayIndex = dateStructure.lastDate.getDay();
   // getDate():日を1から31の整数で取得する;
@@ -225,7 +227,7 @@ export const getDateDiff = (
   // ceil()「0.01」のように微細な値でも切り上げとなります。
   // またマイナスの値はゼロ方向に切り上げとなることに注意しましょう。
   //const diff1 = Math.floor(msDiff / 1000); //DiffTime
-  const diff2 = Math.floor(msDiff / (1000 * 60 * 60 * 24)); //DiffDate
+  const diff2 = Math.floor(msDiff / 864e5); //DiffDate
   // const diff3 = diff1 - 86400 * diff2;
   const leap = countLeapYear(date1.getFullYear(), date2.getFullYear());
   const diff4 = Math.floor((diff2 - leap * 366) / 365) + leap; //DiffYear
@@ -236,13 +238,7 @@ export const getDateDiff = (
 // 日付("2024-5-1")をDate変換される
 //-----------------------------------
 const stringToDate = (dateString1: string = ''): Date => {
-  const dt =
-    // dateString1?.constructor.name === 'Date'
-    //   ? (dateString1 as Date)
-    //   : dateString1
-    //     ? new Date(dateString1)
-    //     : new Date();
-    dateString1 ? new Date(dateString1) : new Date();
+  const dt = dateString1 ? new Date(dateString1) : new Date();
   return dt;
 };
 
@@ -268,6 +264,10 @@ export const getDateWithString = (dateString1: Date, dd: boolean = true) => {
 
   return result;
 };
+// let sec = Math.floor((date3 / 1000) % 60);
+// let min = Math.floor((date3 / 1000 / 60) % 60);
+// let hour = Math.floor((date3 / 1000 / 60 / 60) % 24);
+// let day = Math.floor(date3 / 1000 / 60 / 60 / 24);
 //------------------------
 // Date() --> "yyyy/mm/dd"
 //------------------------
@@ -311,7 +311,7 @@ export const countLeapYear = (fromYear: number, toYear: number = fromYear) => {
 //----------------------------------------------------------
 // Dateオブジェクトを「YYYY-MM-DD」に整形する
 // ISO: 2022-05-04T15:00:00.000Z <- 協定世界時で出力ので
-// OFFSET -540*60000 で予めずらす と00:00:00になる
+// OFFSET -540分*60000 で予めずらす と00:00:00になる
 // new Date('2024.7.21 13:00:04')Zを削除 return 13:00:04.000Z
 //----------------------------------------------------------
 export const getFormatDateTime = (date: Date, time: number = 0) => {
@@ -424,7 +424,7 @@ export const getWeekDay7 = (
 ) => {
   const _date = stringToDate(dateString1);
   const _day = weekStartDayOffset - _date.getDay();
-  const sunDayNum = _date.getTime() + 86400000 * _day + 7 * 86400000 * weeks;
+  const sunDayNum = _date.getTime() + 864e5 * _day + 7 * 864e5 * weeks;
   const _yearMonth = _date.getFullYear() * 100 + _date.getMonth() + 1;
 
   let dayFormat = 0;
@@ -434,9 +434,9 @@ export const getWeekDay7 = (
   const dayList = Array(7)
     .fill(0)
     .map((_, idx) => {
-      dayFormat = sunDayNum + 86400000 * idx;
+      dayFormat = sunDayNum + 864e5 * idx;
       newDate = new Date(dayFormat);
-      const date = newDate.getDate();
+      const date = newDate.getDate(); //日にち
       _yearMonth1 = newDate.getFullYear() * 100 + newDate.getMonth() + 1;
 
       inMonth = _yearMonth === _yearMonth1 ? 1 : 0;
@@ -451,7 +451,7 @@ export const getWeekDay7 = (
 };
 
 //---------------------
-//join... 配列をつなぐ
+//join... Object配列[{name:"name"}{...}]をArray["name","name1"...]つなぐ
 //---------------------
 type profileXXX = {
   name: string;
@@ -467,8 +467,33 @@ export const joinList = (newDataset: profileXXX): string[] => {
           })
           .reduce((prev: string[], curr: string): string[] => {
             return [...prev, curr]; //[...prev, curr, ' ']
-          }, [])
-          //.slice(0, -1); //最後のセパレター削除["友引"," ","芒種"]
+          }, []);
+  //.slice(0, -1); //最後のセパレター削除["友引"," ","芒種"]
 
   return dataString;
 };
+//--------------------------------------
+//協定世界時のシリアル値：ExcelTimeUTC ＝ UnixTime / 86400 + 25569
+//日本標準時のシリアル値：ExcelTimeJST ＝ (UnixTime + 32400) / 86400 + 25569
+//+32400秒 / 86400秒 = 0.375 (tz) or ndt.getTimezoneOffset()= 540分 / 1440分 =0.375;
+//GetTime()を秒に変換 /1000=秒 date.getTime() / 864e5
+//協定世界時(UTC)1970年1月1日00:00:00からの経過時間を表すDateオブジェクトのミリ秒単位
+//１日の秒数：24時間×60分×60秒 ＝ 86400秒
+//UTC に対する JST の時差：+9時間 ＝ +32400秒
+//UNIX Time の基準時刻 (1970/01/01(木) 00:00:00 UTC) に相当するシリアル値：25569
+//UNIX Time ＝ (JD － 2440587.5) * 86400
+//確認： https://eco.mtk.nao.ac.jp/cgi-bin/koyomi/cande/jd2date.cgi
+//---------------------------------------
+export function Date_UTCgetJD(date: Date) {
+  //UtC世界標準時をtimestamp返す
+  const tz = date.getTimezoneOffset() / 1440;
+  return 2440587 + date.getTime() / 864e5 - tz;
+}
+
+export function Date_JSTsetJD(jd: number) {
+  //JST日本標準時をDate返す
+  const date = new Date();
+  const tz = date.getTimezoneOffset() / 1440;
+  date.setTime((jd + tz - 2440587) * 864e5);
+  return date;
+}
