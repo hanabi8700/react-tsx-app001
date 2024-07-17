@@ -19,7 +19,8 @@
 //       kr.uruu    : 平月／閏月 flag （ブール値 平月:false 閏月:true）
 //       kr.month   : 旧暦月（数値）
 //       kr.day     : 旧暦日（数値）
-//       kr.rokuyo  : 六曜名（文字列）
+//       kr.rokuyo  : [六曜名（文字列）,0]
+//       kr.si12    : [十二支（文字列）,0]
 //       kr.moon    : 月齢 (modified by kikuchisan 2000.07.15)
 //   に入っています。
 //   上の例において、１行目を
@@ -34,7 +35,9 @@ export type KyurekiType = {
   day: number;
   rokuyo: string;
   moon: number;
-  [index: string]: number | string;
+  sekki24: (string | number)[];
+  si12: (string | number)[];
+  [index: string]: number | string | (string | number)[];
 };
 // グローバル変数
 const k = Math.PI / 180;
@@ -56,18 +59,66 @@ const mcont: number = 0;
 //UTC に対する JST の時差：+9時間 ＝ +32400秒
 //UNIX Time の基準時刻 (1970/01/01(木) 00:00:00 UTC) に相当するシリアル値：25569
 //UNIX Time ＝ (JD － 2440587.5) * 86400
+//----------------------------------------------
+//const JD = Date_getJD(new Date("2007/07/20")); //2454301
+//MJD = JD － 240 0000; 修正ユリウス日 54301 0.5日を引けば正子の値も得られる．
+//const Si12 = JD % 12; //十二支
 //---------------------------------------
-export function Date_getJD(date: Date) {
+function Date_getJD(date: Date) {
   //UtC世界標準時をtimestamp返す
   return 2440587 + date.getTime() / 864e5 - tz;
 }
 
-export function Date_setJD(jd: number) {
+function Date_setJD(jd: number) {
   //JST日本標準時をDate返す
   const date = new Date();
   date.setTime((jd + tz - 2440587) * 864e5);
   return date;
 }
+//========================================================================
+//修正ユリウス通日(MJD)
+//修正ユリウス日を12で割って、その余りを十二支の下の表の順番に対応させる
+//ということらしい（余りが0以下の場合は12を足す）。
+//余り	0	1	2	3	4	5	6	7	8	9	10	11
+//十二支	寅	卯	辰	巳	午	未	申	酉	戌	亥	子	丑
+//[365.25*2007]+[2007/400]-[2007/100]+[30.59*5]+20-678912=54301(2007年7月20日)
+//「土用の丑の日」は7月30日
+//立秋は8月8日06時31分だってことがわかった。そうすると、7月20日から8月7日の19日間が
+//今年の夏の土用となる。土用は「立春・立夏・立秋・立冬直前の十八日間」と定められるらしい
+//大暑が16日前+2日前が18日間の始まり
+const si12Array = [
+  '寅',
+  '卯',
+  '辰',
+  '巳',
+  '午',
+  '未',
+  '申',
+  '酉',
+  '戌',
+  '亥',
+  '子',
+  '丑',
+];
+//=========================================================================
+// 一粒万倍日いちりゅうまんばいび新しい物事を始めるのに縁起が良い日
+// 立春〜啓蟄前日(新暦2/4頃〜3/4頃)……丑・午の日
+// 啓蟄〜清明前日(新暦3/5頃〜4/4頃)……寅・酉の日
+// 清明〜立夏前日(新暦4/5頃〜5/4頃)……子・卯の日
+// 立夏〜芒種前日(新暦5/5頃〜6/5頃)……卯・辰の日
+// 芒種〜小暑前日(新暦6/6頃〜7/6頃)……巳・午の日
+// 小暑〜立秋前日(新暦7/7頃〜8/7頃)……午・酉の日
+// 立秋〜白露前日(新暦8/8頃〜9/7頃)……子・未の日
+// 白露〜寒露前日(新暦9/8頃〜10/7頃) …卯・申の日
+// 寒露〜立冬前日(新暦10/8頃〜11/6頃)…午・酉の日
+// 立冬〜大雪前日(新暦11/7頃〜12/6頃)…酉・戌の日
+// 大雪〜小寒前日(新暦12/7頃〜1/4頃) …子・亥の日
+// 小寒〜立春前日(新暦1/5頃〜2/3頃)……子・卯の日
+// 天赦日てんしゃび天が万物の罪を赦（ゆる）す日
+// 春（立春から立夏の前日まで）「戊寅（つちのえとら）」
+// 夏（立夏から立秋の前日まで）「甲午（きのえうま）」
+// 秋（立秋から立冬の前日まで）「戊申（つちのえさる）」
+// 冬（立冬から立春の前日まで）「甲子（きのえね）」
 //=========================================================================
 // 新暦に対応する、旧暦オブジェクトを作成する。（コンストラクタ）kyureki
 //
@@ -88,7 +139,8 @@ export function Date_setJD(jd: number) {
 //     }
 //     // this.isQDate = ndt; //{tm:tm}
 // };
-export default function Qreki(tm: number) {
+export default function Qreki(date: Date) {
+  const tm = Date_getJD(date);
   let i, lap, state;
   const chu = new Array(4);
   const saku = new Array(5);
@@ -101,6 +153,8 @@ export default function Qreki(tm: number) {
     moon: 0,
     year: 0,
     rokuyo: '',
+    sekki24: ['', -1],
+    si12: ['', -1],
   };
 
   for (i = 0; i < 5; i++) m[i] = new Object();
@@ -242,6 +296,15 @@ export default function Qreki(tm: number) {
   kyu.rokuyo = rokuyo[(kyu.month + kyu.day - 2) % 6];
   //for(i=0;i<5;i++)document.writeln(m[i].month,"\t",m[i].uruu,"\t",m[i].jd);
   //for(i=0;i<4;i++)document.writeln(chu[i]);
+  //----------------------
+  // 今日が２４節気かどうか調べる
+  //----------------------
+  kyu.sekki24 = check_24sekki(tm);
+  //----------------------
+  // 今日が十二支かどうか調べる
+  //----------------------
+  const csi12 = tm % 12;
+  kyu.si12 = [si12Array[csi12], csi12];
   return kyu;
 }
 
@@ -258,7 +321,7 @@ export default function Qreki(tm: number) {
 // ※ 引数、戻り値ともユリウス日で表し、時分秒は日の小数で表す。
 //	  力学時とユリウス日との補正時刻=0.0secと仮定
 //=========================================================================
-function calc_chu(tm:number, longitude:number) {
+function calc_chu(tm: number, longitude: number) {
   let tm1, tm2, t, rm_sun, delta_rm;
   //-----------------------------------------------------------------------
   // 時刻引数を小数部と整数部とに分解する（精度を上げるため）
@@ -331,7 +394,7 @@ function calc_chu(tm:number, longitude:number) {
 // ※ 引数、戻り値ともJSTユリウス日で表し、時分秒は日の小数で表す。
 //	  力学時とユリウス日との補正時刻=0.0secと仮定
 //=========================================================================
-function calc_saku(tm:number) {
+function calc_saku(tm: number) {
   let lc, t, tm1, tm2, rm_sun, rm_moon, delta_rm;
   //-----------------------------------------------------------------------
   // ループカウンタのセット
@@ -426,14 +489,14 @@ function calc_saku(tm:number) {
 //=========================================================================
 // 角度の正規化を行う。すなわち引数の範囲を ０≦θ＜３６０ にする。
 //=========================================================================
-function NORMALIZATION_ANGLE(angle:number) {
+function NORMALIZATION_ANGLE(angle: number) {
   return angle - 360 * Math.floor(angle / 360);
 }
 
 //=========================================================================
 // 太陽の黄経 λsun(t) を計算する（t は力学時）
 //=========================================================================
-function LONGITUDE_SUN(t:number) {
+function LONGITUDE_SUN(t: number) {
   let ang, th;
   // const k = this.k;
   // with(Math) {
@@ -470,7 +533,7 @@ function LONGITUDE_SUN(t:number) {
 //=========================================================================
 // 月の黄経 λmoon(t) を計算する（t は力学時）
 //=========================================================================
-function LONGITUDE_MOON(t:number) {
+function LONGITUDE_MOON(t: number) {
   let ang, th;
   // const k = this.k;
 
@@ -546,4 +609,77 @@ function LONGITUDE_MOON(t:number) {
   ang = NORMALIZATION_ANGLE(ang + 218.3162);
   th = NORMALIZATION_ANGLE(th + ang);
   return th;
+}
+//#=========================================================================
+//# 今日が２４節気かどうか調べる
+//#
+//# 引数 .... 計算対象となる年月日 year mon day
+//#
+//# 戻り値 .... ２４節気の名称
+//#
+//#=========================================================================
+export function check_24sekki(tm: number) {
+  //#-----------------------------------------------------------------------
+  //# ２４節気の定義28(2,8,14,20,26)立〇、(0,12)〇分
+  //#-----------------------------------------------------------------------
+  const sekki24 = [
+    '春分',
+    '清明',
+    '穀雨',
+    '立夏',
+    '小満',
+    '芒種',
+    '夏至',
+    '小暑',
+    '大暑',
+    '立秋',
+    '処暑',
+    '白露',
+    '秋分',
+    '寒露',
+    '霜降',
+    '立冬',
+    '小雪',
+    '大雪',
+    '冬至',
+    '小寒',
+    '大寒',
+    '立春',
+    '雨水',
+    '啓蟄',
+  ];
+  // let tm = Date_getJD(new Date(year, mon, day, 0, 0, 0));
+
+  //#-----------------------------------------------------------------------
+  //#時刻引数を分解する
+  //#-----------------------------------------------------------------------
+  //floor関数は、与えられた数値以下の最大の整数を返します。
+  let tm1 = Math.floor(tm);
+  let tm2 = tm - tm1;
+  tm2 -= 9.0 / 24.0;
+  let t = (tm2 + 0.5) / 36525.0;
+  t = t + (tm1 - 2451545.0) / 36525.0;
+
+  //#今日の太陽の黄経
+  const rm_sun_today = LONGITUDE_SUN(t);
+
+  tm++;
+  tm1 = Math.floor(tm);
+  tm2 = tm - tm1;
+  tm2 -= 9.0 / 24.0;
+  t = (tm2 + 0.5) / 36525.0;
+  t = t + (tm1 - 2451545.0) / 36525.0;
+
+  //#明日の太陽の黄経
+  const rm_sun_tomorrow = LONGITUDE_SUN(t);
+
+  const rm_sun_today0 = 15.0 * Math.floor(rm_sun_today / 15.0);
+  const rm_sun_tomorrow0 = 15.0 * Math.floor(rm_sun_tomorrow / 15.0);
+
+  if (rm_sun_today0 != rm_sun_tomorrow0) {
+    const sekki24No = rm_sun_tomorrow0 / 15;
+    return [sekki24[sekki24No], sekki24No];
+  } else {
+    return ['', -1];
+  }
 }

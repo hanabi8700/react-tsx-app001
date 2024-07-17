@@ -2,17 +2,25 @@
 import { useCallback, useState } from 'react';
 import * as calc from '~/CalenderLib';
 import './Calendar.css';
+import Rokuyo, { holidayList } from './Rokuyo';
 import Holiday from './Holiday';
+// import ConfigDataGet from './ConfigDataGet';
 
-type holidayList = {
-  date: string;
-  name: string;
-  holiday: boolean;
-  order: number;
-}[];
+// export const fetchUrlArray = () => {
+//   const url = [
+//     // 'https://hanamaru8700.com/cgi-bin/webcalhana/hanafullcal.py',
+//     'https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/webcal',
+//     'https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/holiday',
+//     'https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/holiday003',
+//   ];
+// };
 // １週間のバックグラウンド関数
 // ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
-const weekDayBG = (ctDate: string, weeksNum: number, dataset: holidayList) => {
+const weekDayBG = (
+  ctDate: string,
+  weeksNum: number,
+  dataset: holidayList[],
+) => {
   const weekdayArray = calc.getWeekDay7(ctDate, weeksNum);
   //today.format="2024/06/05"
   // const newDataset = dataset.findIndex((data) => data.name === 'bbb');
@@ -36,7 +44,11 @@ const weekDayBG = (ctDate: string, weeksNum: number, dataset: holidayList) => {
 };
 // 1週間のフォアグラウンド関数
 // ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
-const weekDayFG = (ctDate: string, weeksNum: number, dataset: holidayList) => {
+const weekDayFG = (
+  ctDate: string,
+  weeksNum: number,
+  dataset: holidayList[],
+) => {
   const weekdayArray = calc.getWeekDay7(ctDate, weeksNum);
   //today.format="2024/06/05"
   // let newDataset:string[];
@@ -45,21 +57,22 @@ const weekDayFG = (ctDate: string, weeksNum: number, dataset: holidayList) => {
       <button type="button" name={d.date}>
         {d.dateOnData}
       </button>
-    ); //日にち
+    ); //日にち表示
+    //--------------------------------------------
     //newDataset = dataset.findIndex((data) => data === d.date);
     let newDataset = dataset.filter((data) => {
       return data.date === d.date && 9 < data.order && data.order < 100;
       //六曜（ろくよう、りくよう）dataset 1Day
     });
+    //--------------------------------------
     const array1 = calc.joinList(newDataset); //nameだけ取り出す
-    //
     newDataset = dataset.filter((data) => {
-      return data.date === d.date && data.holiday && data.order >= 100;
+      return data.date === d.date && data.holiday && data.order >= 999;
       //祝日 dataset 1Day
     });
     const array2 = calc.joinList(newDataset); //nameだけ取り出す
     const newArray = array1.concat(array2);
-
+    //---------------------------------------
     const sp = <span>{newArray.join()}</span>;
     // <span>友引 芒種</span>
     return (
@@ -96,6 +109,7 @@ export const useCounter = (initialValue = 0) => {
 // カレンダー本体
 //-------------------
 export const Calendar = () => {
+  console.log('Calendar');
   const { countx, incrementM, decrementM, incrementY, decrementY, reset } =
     useCounter();
   //dayOfWeeks 日月～土
@@ -115,12 +129,14 @@ export const Calendar = () => {
   const ddWareki = calc.JapaneseCalendar(calendarDates.firstDate);
 
   // index 0:きょう  1~n:祝日、六曜
-  let holidayList = [
+  let holidayList: holidayList[] = [
     {
       date: calc.getDateWithString(calendarDates.today),
       name: 'today',
       holiday: false,
       order: 0,
+      type: 'today',
+      option: 0,
     },
 
     // {
@@ -130,11 +146,22 @@ export const Calendar = () => {
     //   order: 401,
     // },
   ];
-
+  const betweenArray = calc.getDatesBetween(
+    calendarDates.firstDate,
+    //calendarDates.lastDate+2週目の土曜日までをDate配列で
+    calc.getSpecificDayDate(
+      6, //土曜日
+      3, //2週目0,1,2
+      calc.getDateWithString(calendarDates.lastDate),
+    ),
+  );
+  //--------------------------------------
   // ホリデイ祝日、六曜、特別記念日など
-  const result2 = Holiday(calendarDate, holidayList);
-  holidayList = holidayList.concat(result2); //配列結合
-
+  //--------------------------------------
+  const result2 = Rokuyo(betweenArray); //六曜
+  const result3 = Holiday(betweenArray); //
+  holidayList = holidayList.concat(result2, result3); //配列結合
+  // ConfigDataGet();
 
   // -----------------------------Display-Calendar-------------------------------------
   return (

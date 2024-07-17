@@ -18,7 +18,16 @@ const Root = () => {
             <Link to="login">Login</Link>
           </li>
           <li className="nav-list-item">
-            <Link to="ng">LYU</Link>
+            <Link to="ng">ng</Link>
+          </li>
+          <li className="nav-list-item">
+            <Link to="useref">useRef</Link>
+          </li>
+          <li className="nav-list-item">
+            <Link to="configdata">ConfigData</Link>
+          </li>
+          <li className="nav-list-item">
+            <Link to="dispatch">Dispatch</Link>
           </li>
         </ul>
       </header>

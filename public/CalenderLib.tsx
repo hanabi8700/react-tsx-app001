@@ -30,13 +30,13 @@ export interface ObjectLiteralLike0 {
   prevLastDayDate?: number;
   prevDateLastWeek?: Date;
   nextDateFirstWeek?: Date;
-  // [index: string]: string | number | Date;
+  // [x: string]: string | number | Date;
 }
 export type EventType = {
   type: number;
   date: Date[];
   data010: number;
-  [index: string]: number | Date[];
+  [x: string]: number | Date[];
 };
 
 //****************************************************
@@ -94,12 +94,17 @@ export const CalenderLib = (dateString1: string = '') => {
 type ObjectLiteralLike = {
   // ja: string[];
   // en: string[];
-  [lang: string]: string[];
+  [x: string]: string[];
 };
 // {属性名: 属性値}の形式のオブジェクト
 // type Props = {
 //   date: Date | number | null;
 //   lang: string | undefined;
+// };
+// type holidayList = {
+//   [x: string]: {
+//     date: string;
+//   };
 // };
 
 //-----------------------------------
@@ -283,7 +288,7 @@ export const getDateWithString = (dateString1: Date, dd: boolean = true) => {
 // 2024年06月21日->20240621->Date()
 // 省略：今日、最低４桁必要だとgetNumDate(2024)
 //---------------------------------
-export const getNumDate = (dateString: string | number = '') => {
+export const get8NumToDate = (dateString: string | number = '') => {
   let dateString2 = String(dateString).replace(/[^\d]/g, ''); //数字のみ
   if (dateString2.length < 4 && dateString2 !== '')
     dateString2 = ('0000' + dateString2).slice(-4);
@@ -381,15 +386,17 @@ export const getAddMonthDate2 = (
     return tempEndDate.getDate();
   })(year3, month3 + monthTerm);
 
-  if (day3 > endOfMonth) {
-    day3 = endOfMonth;
-  } else {
-    if (monthTerm >= 0) {
-      day3 = day3 - 1;
-    } else {
-      day3 = day3 + 1;
-    }
-  }
+  // if (day3 > endOfMonth) {
+  //   day3 = endOfMonth;
+  // } else {
+  //   if (monthTerm >= 0) {
+  //     day3 = day3 - 1;
+  //   } else {
+  //     day3 = day3 + 1;
+  //   }
+  // }
+  day3 = day3 > endOfMonth ? endOfMonth : monthTerm >= 0 ? day3 - 1 : day3 + 1;
+
 
   const newDate = initDate(); //1日
 
@@ -454,10 +461,10 @@ export const getWeekDay7 = (
 //join... Object配列[{name:"name"}{...}]をArray["name","name1"...]つなぐ
 //---------------------
 type profileXXX = {
-  name: string;
-  date?: string;
-}[];
-export const joinList = (newDataset: profileXXX): string[] => {
+    name: string;
+    date?: string;
+};
+export const joinList = (newDataset: profileXXX[]): string[] => {
   const dataString =
     newDataset.length === 0
       ? []
@@ -482,18 +489,108 @@ export const joinList = (newDataset: profileXXX): string[] => {
 //UTC に対する JST の時差：+9時間 ＝ +32400秒
 //UNIX Time の基準時刻 (1970/01/01(木) 00:00:00 UTC) に相当するシリアル値：25569
 //UNIX Time ＝ (JD － 2440587.5) * 86400
+//MJD = JD － 240 0000; 修正ユリウス日 54301 0.5日を引けば正子の値も得られる．
+//const Si12 = JD % 12; //十二支
 //確認： https://eco.mtk.nao.ac.jp/cgi-bin/koyomi/cande/jd2date.cgi
+//
+//usage:const qw = calc.date_JSTsetJD(calc.date_UTCgetJD(new Date('2024/07/31')));
 //---------------------------------------
-export function Date_UTCgetJD(date: Date) {
+export function date_UTCgetJD(date: Date) {
   //UtC世界標準時をtimestamp返す
   const tz = date.getTimezoneOffset() / 1440;
   return 2440587 + date.getTime() / 864e5 - tz;
 }
 
-export function Date_JSTsetJD(jd: number) {
+export function date_JSTsetJD(jd: number) {
   //JST日本標準時をDate返す
   const date = new Date();
   const tz = date.getTimezoneOffset() / 1440;
   date.setTime((jd + tz - 2440587) * 864e5);
   return date;
 }
+/**
+ * 曜日を返す
+ * @param {any} dayIndex=0
+ * @param {any} en=false
+ * @returns {any}
+ */
+export function dayOfWeek(dayIndex = 0, en = false) {
+  const weeksJP = ['日', '月', '火', '水', '木', '金', '土'];
+  const weeksEN = ['sun', 'mon', 'tue', 'thu', 'wed', 'fri', 'sat'];
+  const weeks = en ? weeksEN : weeksJP;
+  if (dayIndex < 0) {
+    return weeks.length;
+  }
+  return weeks[dayIndex % 7];
+}
+
+/**
+ * 和暦を返す
+ * @param {any} currentDate
+ * @returns {any} オブジェクト
+ * this.getJapanCalendar(new Date(1868,11,2))
+ *   ->year=1,yearText:{text: '明治', stext: 'M'}、明治元年
+ */
+export function getJapanCalendar(currentDate: Date) {
+  const JcData = [
+    {
+      year: 2019,
+      month: 5,
+      date: 1,
+      yearText: { text: '令和', stext: 'R' },
+      Milliseconds: 0,
+    },
+    {
+      year: 1989,
+      month: 1,
+      date: 8,
+      yearText: { text: '平成', stext: 'H' },
+      Milliseconds: 0,
+    },
+    {
+      year: 1926,
+      month: 12,
+      date: 25,
+      yearText: { text: '昭和', stext: 'S' },
+      Milliseconds: 0,
+    },
+    {
+      year: 1912,
+      month: 7,
+      date: 30,
+      yearText: { text: '大正', stext: 'T' },
+      Milliseconds: 0,
+    },
+    {
+      year: 1868,
+      month: 10,
+      date: 23,
+      yearText: { text: '明治', stext: 'M' },
+      Milliseconds: 0,
+    },
+  ];
+  JcData.forEach((e) => {
+    //時間(milliseconds)を追加
+    e.Milliseconds = new Date(e.year, e.month, e.date).getTime();
+  });
+  const t = currentDate.getTime();
+  const w = JcData.find((e) => t >= e.Milliseconds);
+  if (w) {
+    const y = currentDate.getFullYear() - w.year + 1;
+    return { year: y, yearText: w['yearText'] };
+  }
+  return {};
+}
+// holidayList = holidayList.concat(result); //配列結合
+// オブジェクト→配列 arr.find(([id, data])=>{})
+//const arr = Object.entries(obj);//id=obj.key,data={obj.data}
+//--------------------------------
+// export function dateSort = (MyAppointments) =>
+//   MyAppointments.sort(function (x, y) {
+//   var firstDate = new Date(x.appointment_date),
+//     SecondDate = new Date(y.appointment_date);
+
+//   if (firstDate < SecondDate) return -1;
+//   if (firstDate > SecondDate) return 1;
+//   return 0;
+// });

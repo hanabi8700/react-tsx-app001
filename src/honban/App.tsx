@@ -6,7 +6,11 @@ import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import { Calendar } from './pages/Calendar';
 import './App.css';
+import UserefTest from './pages/UserefTest';
+import Dispatch from './pages/Dispatch';
+// import ConfigDataGet from './pages/ConfigDataGet';
 
+// import ConfigDataGet from './pages/ConfigDataGet';
 
 // vite.config.jsのbaseプロパティの値は
 // import.meta.env.BASE_URLで取得できる。
@@ -44,6 +48,9 @@ const router = createBrowserRouter([
           </div>
         ),
       },
+      { path: 'useref', element: <UserefTest /> },
+      // { path: 'configdata', element: <ConfigDataGet /> },
+      { path: 'Dispatch', element: <Dispatch /> },
     ],
   },
 ]);

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
+    "axios": "^1.7.2",
     "react": "^18.2.0",
     "react-big-calendar": "^1.12.2",
     "react-dom": "^18.2.0",
@@ -56,5 +57,4 @@
       "eslint --fix"
     ]
   }
-
 }

@@ -25,11 +25,11 @@
     /* paths   … baseUrl からの相対パスでマッピングされるパスを指定できる*/
     "baseUrl": "src",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["../src/*"],
       "~/*": ["../public/*"]
     }
   },
-  "include": ["src", ".eslintrc.cjs", "public/CalenderLib.tsx"],
+  "include": ["src", ".eslintrc.cjs", "public/CalenderLib.tsx", "public/FsPromiss.tsx"],
   "exclude": ["src/sample*/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
