@@ -61,16 +61,16 @@ const weekDayFG = (
     //--------------------------------------------
     //newDataset = dataset.findIndex((data) => data === d.date);
     let newDataset = dataset.filter((data) => {
-      return data.date === d.date && 9 < data.order && data.order < 100;
-      //六曜（ろくよう、りくよう）dataset 1Day
+      return data.date === d.date && 9 < data.order && data.order < 30;
+      //六曜（ろくよう、りくよう）dataset 1Day  (order:10=>29)
     });
     //--------------------------------------
-    const array1 = calc.joinList(newDataset); //nameだけ取り出す
+    const array1 = calc.joinList(newDataset,"name"); //nameだけ取り出す
     newDataset = dataset.filter((data) => {
       return data.date === d.date && data.holiday && data.order >= 999;
       //祝日 dataset 1Day
     });
-    const array2 = calc.joinList(newDataset); //nameだけ取り出す
+    const array2 = calc.joinList(newDataset,"name"); //nameだけ取り出す
     const newArray = array1.concat(array2);
     //---------------------------------------
     const sp = <span>{newArray.join()}</span>;
@@ -159,8 +159,12 @@ export const Calendar = () => {
   // ホリデイ祝日、六曜、特別記念日など
   //--------------------------------------
   const result2 = Rokuyo(betweenArray); //六曜
-  const result3 = Holiday(betweenArray); //
-  holidayList = holidayList.concat(result2, result3); //配列結合
+  const result3 = Holiday(result2); //土用の丑の日
+  holidayList = holidayList.concat(result2, result3); //配列結合シャローコピー
+
+  calc.dateSort(holidayList,["date","order"]);
+  console.log(holidayList);
+
   // ConfigDataGet();
 
   // -----------------------------Display-Calendar-------------------------------------

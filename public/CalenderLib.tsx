@@ -397,7 +397,6 @@ export const getAddMonthDate2 = (
   // }
   day3 = day3 > endOfMonth ? endOfMonth : monthTerm >= 0 ? day3 - 1 : day3 + 1;
 
-
   const newDate = initDate(); //1日
 
   newDate.setFullYear(year3);
@@ -419,6 +418,52 @@ export const getAddMonthDate2 = (
 // setDate(1)は月初、(30)30.....
 // setDate(31:30+1)は6/15->7/1,7/31,7/31....
 // setDate(32:30+2)は6/15->7/2,8/1,9/1,10/2,...
+// 使い方：start1.setDate(start1.getDate() + 1);//１日後
+//-----------------------------------------------------
+//-----------------------------------------------------
+/**
+ * @param  {int} begin
+ * @param  {int} end
+ * @param  {int} interval=1
+ */
+// for (const i of range(begin,end)) {}
+export function* range(begin: number, end: number, interval = 1) {
+  for (let i = begin; i < end; i += interval) {
+    yield i;
+  }
+}
+//Deep Copy
+//structuredClone(value, transfer);
+//Deep Copy
+// export function deepCloneObj2(originalObject) {
+//   return JSON.parse(JSON.stringify(originalObject));
+// }
+//Deep Copy
+export function deepCloneObj(obj: any): any {
+  if (typeof obj === 'object') {
+    if (Array.isArray(obj)) {
+      return obj.map(deepCloneObj);
+    } else {
+      const clonedObj: { [index: string]: any } = {};
+      for (const key in obj) {
+        clonedObj[key] = deepCloneObj(obj[key]);
+      }
+      return clonedObj;
+    }
+  } else {
+    return obj;
+  }
+}
+//Deep Copy
+// export function cloneObject(obj) {
+//   const clone = {};
+//   Object.keys(obj).forEach((key) => {
+//     obj[key] != null && typeof obj[key] === 'object'
+//       ? (clone[key] = cloneObject(obj[key]))
+//       : (clone[key] = obj[key]);
+//   });
+//   return clone;
+// }
 //-------------------------------------------------------------------
 // 1週間の曜日[日曜日始まり]に日付を日付[list]で返す
 // {day: 0, date: 'Sun Jun 02 2024 19:06:36 GMT+0900 (日本標準時)'}
@@ -457,20 +502,29 @@ export const getWeekDay7 = (
   return dayList;
 };
 
+// const obj: {
+//   name: string;
+//   age: number;
+// } = {
+//   name: 'John Doe',
+//   age: 30,
+// };
+// const keys: Array<keyof typeof obj> = Object.keys(obj);
+// const name: string = obj[keys[0]];
 //---------------------
 //join... Object配列[{name:"name"}{...}]をArray["name","name1"...]つなぐ
+// const array2 = calc.joinList(newDataset,"name"); //nameだけ取り出す
 //---------------------
-type profileXXX = {
-    name: string;
-    date?: string;
-};
-export const joinList = (newDataset: profileXXX[]): string[] => {
+// type profileObj = {
+//   [x:string]:any;
+// };
+export const joinList = (newDataset: object[], tagkey: string): string[] => {
   const dataString =
     newDataset.length === 0
       ? []
       : newDataset
-          .map((data) => {
-            return data.name;
+          .map((data: { [index: string]: any }) => {
+            return data[tagkey];
           })
           .reduce((prev: string[], curr: string): string[] => {
             return [...prev, curr]; //[...prev, curr, ' ']
@@ -585,12 +639,69 @@ export function getJapanCalendar(currentDate: Date) {
 // オブジェクト→配列 arr.find(([id, data])=>{})
 //const arr = Object.entries(obj);//id=obj.key,data={obj.data}
 //--------------------------------
-// export function dateSort = (MyAppointments) =>
-//   MyAppointments.sort(function (x, y) {
-//   var firstDate = new Date(x.appointment_date),
-//     SecondDate = new Date(y.appointment_date);
+// オブジェクトの配列で特定の値でソートする処理
+//-------------------------------------
+export const dateSort = (
+  //const myObj: {[index: string]:any} = {}
+  MyArray: { [index: string]: any }[],
+  sortKey: string[],
+  sortType: string = 'ASC',
+) =>
+  MyArray.sort(function (x, y) {
+    // const firstDate = new Date(x[sortKey]),SecondDate = new Date(y[sortKey]);
+    let result = compareSort(sortKey[0], sortType, x, y);
+    if (sortKey.length > 1 && result === 0) {
+      result = compareSort(sortKey[1], sortType, x, y);
+      if (sortKey.length > 2 && result === 0) {
+        result = compareSort(sortKey[2], sortType, x, y);
+      }
+    }
 
-//   if (firstDate < SecondDate) return -1;
-//   if (firstDate > SecondDate) return 1;
-//   return 0;
-// });
+    return result;
+  });
+const compareSort = (
+  sortKey: string,
+  sortType: string,
+  source: any,
+  target: any,
+) => {
+  const result = 0;
+  if (sortType === 'ASC') {
+    // 昇順
+    if (source[sortKey] < target[sortKey]) return -1;
+    if (source[sortKey] > target[sortKey]) return 1;
+  } else {
+    // 降順
+    if (source[sortKey] > target[sortKey]) return -1;
+    if (source[sortKey] < target[sortKey]) return 1;
+  }
+  return result;
+};
+//-------------------------------------
+// 要素入れ替えの処理
+// replaceArrayElements(配列, 入れ替え先インデックス, 入れ替えもとインデックス);
+//-------------------------------------
+export function replaceArrayElements(
+  array: [],
+  targetId: number,
+  sourceId: number,
+) {
+  const cloneArray = [...array];
+  [cloneArray[targetId], cloneArray[sourceId]] = [
+    array[sourceId],
+    array[targetId],
+  ];
+  return cloneArray;
+}
+//-------------------------------------
+// 配列を任意のサイズ毎に区切る
+//const ary = [1, 2, 3, 4, 5, 6, 7, 8]
+//console.log(eachSlice(ary, 2)); // [[1, 2], [3, 4], [5, 6], [7, 8]]
+//console.log(eachSlice(ary, 4)); // [[1, 2, 3, 4], [5, 6, 7, 8]];
+//-------------------------------------
+export const eachSlice = (ary: number[], size: number): number[][] =>
+  ary.reduce<number[][]>(
+    (newArray, _, i) =>
+      i % size ? newArray : [...newArray, ary.slice(i, i + size)],
+    [],
+  );

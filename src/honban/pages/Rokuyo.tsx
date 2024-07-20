@@ -15,6 +15,8 @@ export interface holidayList {
   option1?: number;
 }
 // ホリデイ祝日、六曜２４節気、特別記念日など
+//# ２４節気の定義28(3夏,9秋,15冬,21春)立〇、(0春,12秋)〇分
+//十二支  0寅 1卯 2辰 3巳 4午 5未 6申 7酉 8戌 9亥 10子 11丑
 function Rokuyo(betweenArray: Date[]) {
   const result = betweenArray.map((date) => {
     const dateQreki = Qreki(date); //date5.getJD()
