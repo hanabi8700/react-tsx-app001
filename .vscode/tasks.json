@@ -25,6 +25,6 @@
         "kind": "build", // ビルドタスクとして認識させる
         "isDefault": true // Cmd + Shift + B で即実行
       }
-    },
+    }
   ]
 }

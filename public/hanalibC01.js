@@ -96,7 +96,11 @@ export default class HanalibC01 {
     const firstDate = new Date(year, month - 1, 1); //month月の1日
     const monthLastDate = new Date(year, month, 0); // month月の最終日
     //日枠6行の最終日
-    const lastDate = new Date(firstDate.getFullYear(), firstDate.getMonth(), 36);
+    const lastDate = new Date(
+      firstDate.getFullYear(),
+      firstDate.getMonth(),
+      36,
+    );
 
     const calendarFirstDay = new Date(firstDate.getTime()); // 複写
     const calendarLastDay = new Date(lastDate.getTime()); // 複写
@@ -190,7 +194,9 @@ export default class HanalibC01 {
         if (typeof s === 'object' && typeof s.text === 'string') {
           listViewItem.appendChild(document.createTextNode(s.text));
           listViewItem.style.color = s.color ? s.color : '';
-          listViewItem.style.backgroundColor = s.backgroundColor ? s.backgroundColor : '';
+          listViewItem.style.backgroundColor = s.backgroundColor
+            ? s.backgroundColor
+            : '';
           listViewItem.style.fontWeight = s.fontWeight ? s.fontWeight : '';
           listViewItem.style.cssText = s.cssText ? s.cssText : '';
         }
@@ -279,13 +285,24 @@ export default class HanalibC01 {
     return { elArray, elCountArray, dataString, isoDate };
   }
 
-  getChildElementCount(dt, dtDrawStartDate, durations = 0, dataString = 'dateBody', max = false) {
+  getChildElementCount(
+    dt,
+    dtDrawStartDate,
+    durations = 0,
+    dataString = 'dateBody',
+    max = false,
+  ) {
     //elCountArray:[2,0,0]は初日(2)二日目(0)三日目(0)の個数で占めている
     //max=true:[2,0,0]の場合2を返す。
     //この場合3番目が空いている
     // const dt = luxon.DateTime;
 
-    let oArray = this.getElementArray(dt, dtDrawStartDate, durations, dataString);
+    let oArray = this.getElementArray(
+      dt,
+      dtDrawStartDate,
+      durations,
+      dataString,
+    );
     let elCountArray = oArray['elCountArray'];
     let maxValue = Math.max.apply(null, elCountArray);
     maxValue = isFinite(maxValue) ? maxValue : 0;
@@ -320,7 +337,9 @@ export default class HanalibC01 {
     // diffSunObj {diffDays: 7, dtDiffDays: m, diffFromSunDays: 5, diffToSunDays: 2, weekday: 5}
     // StartDayとEndDayは時間に左右されなために深夜時間に統一します
 
-    const diffDays = dtEndDay.startOf('day').diff(dtStartDay.startOf('day'), 'days');
+    const diffDays = dtEndDay
+      .startOf('day')
+      .diff(dtStartDay.startOf('day'), 'days');
     const weekday = dtStartDay.weekday % 7;
     const diffToFirstSunDays = 7 - weekday;
     const diffSun = diffDays.days - diffToFirstSunDays;
@@ -353,17 +372,22 @@ export default class HanalibC01 {
     const date2 = dt.fromISO(endDay);
     const intervalOne = itv.fromDateTimes(date1, date2);
     const date3 =
-      Object.prototype.toString.call(calendars.calendarFirstDay) === '[object Date]'
+      Object.prototype.toString.call(calendars.calendarFirstDay) ===
+      '[object Date]'
         ? dt.fromJSDate(calendars.calendarFirstDay)
         : dt.fromISO(calendars.calendarFirstDay);
     const date4 =
-      Object.prototype.toString.call(calendars.calendarLastDay) === '[object Date]'
+      Object.prototype.toString.call(calendars.calendarLastDay) ===
+      '[object Date]'
         ? dt.fromJSDate(calendars.calendarLastDay)
         : dt.fromISO(calendars.calendarLastDay);
     const intervalTwo = itv.fromDateTimes(date3, date4);
     const diffDays = date2.diff(date1, 'days').days; //イベント1日
     //期間Two内true  date1が含まれているか？期間Oneオーバーラップしているか？
-    let ansBool = diffDays == 0 ? intervalTwo.contains(date1) : intervalTwo.overlaps(intervalOne);
+    let ansBool =
+      diffDays == 0
+        ? intervalTwo.contains(date1)
+        : intervalTwo.overlaps(intervalOne);
     //期間例（2022-03-05->2022-03-10）の場合検査日付2020-03-10は true を返さないため補足
     ansBool = date1.diff(date4, 'days').days == 0 ? true : ansBool;
     return ansBool;
@@ -393,7 +417,10 @@ export default class HanalibC01 {
   checkDateEqual(dt, startIsoString, endIsoString) {
     // 始まりと終わりの日時の検査
     const ObjStartTm = this.getDtTimeString(dt, startIsoString);
-    const ObjEndTm = this.getDtTimeString(dt, endIsoString ? endIsoString : startIsoString);
+    const ObjEndTm = this.getDtTimeString(
+      dt,
+      endIsoString ? endIsoString : startIsoString,
+    );
     const allDayTimeFlag = ObjEndTm.ts - ObjStartTm.ts ? false : true;
     const allDayFlag = ObjEndTm.isoDate == ObjStartTm.isoDate ? true : false;
     return {
@@ -429,7 +456,7 @@ export default class HanalibC01 {
     let ansArray = [];
     Promise.allSettled(
       // [Calendar.prototype.queryAPI(urls[0]).then((f) => `$ { f.length }films `),]
-      urlArray.map((d) => this.queryAPI(d).then((f) => f))
+      urlArray.map((d) => this.queryAPI(d).then((f) => f)),
     )
       .then((results) => {
         const statistics = results
@@ -475,7 +502,9 @@ export default class HanalibC01 {
   deleteOfObjectKeys(objectArray, deleteKeysArray) {
     // 指定Keyのオブジェクトの削除 deleteKeysArray=["keyName1","keyName2"]
     const res = objectArray.map((el) =>
-      Object.fromEntries(Object.entries(el).filter(([key]) => !deleteKeysArray.includes(key)))
+      Object.fromEntries(
+        Object.entries(el).filter(([key]) => !deleteKeysArray.includes(key)),
+      ),
     );
     return res;
   }

@@ -4,8 +4,8 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 // import { join } from 'path';
 import { resolve } from 'path';
 
-//__dirname=working directly
-const root = resolve(__dirname, 'src'); //固定 index.html の場所
+//__dirname= working directly;//vite.config.tsがある場所
+// const root = resolve(__dirname, 'src'); //固定 index.html の場所
 // const outDir = resolve(__dirname, 'dist'); //固定
 // https://vitejs.dev/config/
 //\Users\hanamaru\Documents\INFO\%E9%96%8B%E7%99%BA%E7%94%A8\js\react-tsx-app001\src
@@ -13,7 +13,8 @@ const root = resolve(__dirname, 'src'); //固定 index.html の場所
 export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
   // baseプロパティに設定する値
   const product = 'honban';
-  let base = product;
+  let base = product; //dev時のpash値 localhost/product/...
+  const root = resolve(__dirname, product); //固定 index.html の場所
 
   // 本番時に適用させるbaseの値
   // if (mode === 'production') {
@@ -22,31 +23,37 @@ export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
     base = '/cgi-bin/hanareact/js/' + product;
   }
   return {
-    plugins: [react(), tsconfigPaths()],
-    // plugins: [react()],
+    // `root` からの相対パスで `tsconfig.json` の場所を指定する
+    plugins: [react(), tsconfigPaths()], //{ root: '../' }
     resolve: {
       alias: [
-        { find: '@/', replacement: `${__dirname}/src/` },
-        // { find: '~/', replacement: `${__dirname}/public/` },
+        // { find: '@/', replacement: `${__dirname}/src/` },
+        { find: '~/', replacement: `${__dirname}/public/` },
         // { find: "@", replacement: path.resolve(__dirname, "src") },
       ],
+    },
+    server: {
+      port: 3000,
+      open: true,
     },
     // コンパイル後のベースアドレス,dev,build
     // ビルド後のindex.htmlファイル内でのcss,javascriptのリンクを相対にする
     //  <script src="./assets/honban101-bundle.js"></script>
     //  <link  href="./assets/honban101-txyeWEEk.css">
     //__dirname が vite.config.js ファイルのフォルダになることに注意してください。
-    // baseプロパティをbase変数で指定
+    // baseプロパティをbase変数で指定↓
     base: base,
-    // index.html の場所
-    // root: root,
-    // build.outDir オプションでビルドファイルの出力場所を指定できる
+    // index.html の場所↓
+    root: root,
     // publicDir: 'public',
+    //デフォルトでは .env の場所は vite.config.js の root の場所↓
+    // envDir: '../../',//vite.configと同じ場所
     build: {
+      // build.outDir オプションでビルドファイルの出力場所を指定できる↓
       // 出力ディレクトリーを指定します（プロジェクトルートからの相対パス）。
       // `root` からの相対パスで指定する
       // outDir,
-      // outDir: '../../dist',
+      // outDir: '../dist',
       // 存在しないときはフォルダを作成するDefault:true
       // emptyOutDir: true,
       copyPublicDir: false,
@@ -60,7 +67,7 @@ export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
         input: {
           // honban: 'src/honban/index.html',//<--ダメ
           // honban: `src/honban/index.html`,//<--ダメ
-          honban: resolve(root, product, 'index.html'),
+          honban: resolve(root, 'index.html'),
         },
         output: {
           //base/assets/[name]-bundle.js

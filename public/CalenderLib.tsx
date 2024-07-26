@@ -693,6 +693,7 @@ export function replaceArrayElements(
   ];
   return cloneArray;
 }
+//type Concat<T extends unknown[], U extends unknown[]> = [...T, ...U]
 //-------------------------------------
 // 配列を任意のサイズ毎に区切る
 //const ary = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -705,3 +706,124 @@ export const eachSlice = (ary: number[], size: number): number[][] =>
       i % size ? newArray : [...newArray, ary.slice(i, i + size)],
     [],
   );
+
+//------------------------------------------
+//const data = [...Array(100).keys()]; // 0 から 99 までの配列
+//[...arr].forEach((v,i) => {})//forの代わり
+//2次元配列の生成と値の初期化 create
+//fillを使用して初期化した場合(Row列,Col行)
+export const create2DimArray = (
+  eleRow: number, //列
+  element: number = 1, //行
+  fill: number | string = 0,
+): any[][] => {
+  const array = Array.from({ length: element }, () =>
+    Array.from({ length: eleRow }).fill(fill),
+  );
+  //------------------------
+  // const array = new Array(0); //0行配列(array)を作成
+  // for (let y = 0; y < element; y++) {
+  //   //ｙ行配列(array)の各要素に対して、eleRow列の配列を作成し、0で初期化
+  //   array[y] = new Array(eleRow).fill(fill);
+  // }
+  //-------------------
+  // let arr = Array(m)
+  //   .fill()
+  //   .map(() => Array(n));
+  //-----------------
+  // let a;
+  // for (a = []; a.length < 3; ) a.push(Array(5).fill(0));
+  //------------------
+
+  return array;
+};
+//2次元配列から特定の列だけ取り出し
+export const getRow2DimArray = (
+  arr2d: any[][],
+  eleRow: number = 1,
+): number[] => {
+  const picked = arr2d.map((item) => item[eleRow]);
+  return picked;
+};
+
+//二次元配列から一次元配列への変換
+//Down Ndim to N-1dim
+//reduce & concat 1回につきカッコが一つ外れる。カッコがない要素はそのまま出力される。
+export const get2dTo1d = (arr2d: any[][]) => {
+  const array1d = arr2d.reduce((newArr, elem) => {
+    return newArr.concat(elem); //elem:[1,2]
+  }, []);
+  // const array1d = [];
+  // for (const array of arr2d) {
+  //   for (const result of array) {
+  //     array1d.push(result);
+  //   }
+  // }
+  return array1d;
+};
+
+// 二次元配列の姿の文字列を作成する
+export const str2d = (arr2d: any[][]) => {
+  const str = arr2d.map((row) => row.join(' ')).join('\n');
+  return str;
+};
+
+//二次元配列を連想配列に変換する、０列目はオブジェクトのキー
+//[["氏名", "年齢", "性別"],  ["今野 智博", "75", "男"]]
+export const conv2dToObj = (arr2d: any[][]) => {
+  const keys = arr2d[0];
+  const newObj = arr2d.slice(1).map((item) => {
+    //arr2d[1]から
+    const obj: { [x: string]: any } = {};
+    keys.forEach((key, i) => (obj[key] = item[i]));
+    return obj;
+  });
+  return newObj;
+};
+//TwoDimensional、false:第1引数のarr1の下側に、第2引数のarr2を追加(push)する。
+//true:第1引数のarr3の右側に、第2引数のarr4を追加(push)する
+//[第3引数]axis: false縦方向に結合、axis: true横方向に結合
+//一次元配列に値をconcatする際と同様に、二次元配列と二次元配列を非破壊的に結合する。
+export const concat2DimArray = (
+  array1: any[],
+  array2: any[],
+  axis: boolean = false,
+) => {
+  // if (axis != 1) axis = 0;
+  let array3 = [];
+  if (!axis) {
+    //縦方向の結合
+    array3 = array1.slice();
+    for (let i = 0; i < array2.length; i++) {
+      array3.push(array2[i]);
+    }
+  } else {
+    //横方向の結合
+    //TS2339エラーは型を明示していない場合に発生するエラーです。
+    for (let i = 0; i < array1.length; i++) {
+      array3[i] = array1[i].concat(array2[i]);
+    }
+  }
+  return array3;
+};
+//一次元配列に値をpushする際と同様に、二次元配列に二次元配列を破壊的に追加する。
+//[第3引数]axis: false縦方向に結合、axis: true横方向に結合
+export const push2DimArray = (
+  array1: any[],
+  array2: any[],
+  axis: boolean = false,
+) => {
+  // if (axis != 1) axis = 0;
+  if (!axis) {
+    //縦方向の追加
+    for (let i = 0; i < array2.length; i++) {
+      array1.push(array2[i]);
+    }
+  } else {
+    //横方向の追加
+    for (let i = 0; i < array1.length; i++) {
+      Array.prototype.push.apply(array1[i], array2[i]);
+    }
+  }
+};
+//--------------------------------------------------

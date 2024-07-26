@@ -6,8 +6,8 @@ import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import { Calendar } from './pages/Calendar';
 import './App.css';
-import UserefTest from './pages/UserefTest';
-import Dispatch from './pages/Dispatch';
+// import UserefTest from './pages/UserefTest';
+// import Dispatch from './pages/Dispatch';
 // import ConfigDataGet from './pages/ConfigDataGet';
 
 // import ConfigDataGet from './pages/ConfigDataGet';
@@ -17,6 +17,7 @@ import Dispatch from './pages/Dispatch';
 const router = createBrowserRouter([
   {
     path: import.meta.env.BASE_URL, //build時にbaseの値
+    //vite-env.d.tsをsrcの中に置く
     //path: "/",//必ずルートから
     element: <Root />, //共通Page
     // errorElement:<div>404 NotFund</div>
@@ -48,9 +49,9 @@ const router = createBrowserRouter([
           </div>
         ),
       },
-      { path: 'useref', element: <UserefTest /> },
+      // { path: 'useref', element: <UserefTest /> },
       // { path: 'configdata', element: <ConfigDataGet /> },
-      { path: 'Dispatch', element: <Dispatch /> },
+      // { path: 'Dispatch', element: <Dispatch /> },
     ],
   },
 ]);

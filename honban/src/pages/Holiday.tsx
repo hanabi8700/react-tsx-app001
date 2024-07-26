@@ -25,7 +25,7 @@ function Holiday(rokuyo: holidayList[]): holidayList[] {
     const start1 = new Date(unixTime - 864e5 * (rituObj.option === 8 ? 2 : 18));
     const end1 = new Date(start1.getTime() + 864e5 * 17); //初日から18日
     const result1 = rituList.filter((ele) => {
-      const tm = Date.parse(ele.date);
+      const tm = Date.parse(ele.date); //日時を表す文字列を解釈
       return (
         tm >= start1.getTime() && tm < end1.getTime() && ele.option1 === 11
       );

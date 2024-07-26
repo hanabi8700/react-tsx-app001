@@ -1,5 +1,6 @@
 //import React from 'react';
 import { useCallback, useState } from 'react';
+// import * as calc from '../../../public/CalenderLib';
 import * as calc from '~/CalenderLib';
 import './Calendar.css';
 import Rokuyo, { holidayList } from './Rokuyo';
@@ -57,7 +58,7 @@ const weekDayFG = (
       <button type="button" name={d.date}>
         {d.dateOnData}
       </button>
-    ); //日にち表示
+    ); //日にち表示Button
     //--------------------------------------------
     //newDataset = dataset.findIndex((data) => data === d.date);
     let newDataset = dataset.filter((data) => {
@@ -65,14 +66,15 @@ const weekDayFG = (
       //六曜（ろくよう、りくよう）dataset 1Day  (order:10=>29)
     });
     //--------------------------------------
-    const array1 = calc.joinList(newDataset,"name"); //nameだけ取り出す
+    const array1 = calc.joinList(newDataset, 'name'); //nameだけ取り出す
     newDataset = dataset.filter((data) => {
       return data.date === d.date && data.holiday && data.order >= 999;
       //祝日 dataset 1Day
     });
-    const array2 = calc.joinList(newDataset,"name"); //nameだけ取り出す
+    const array2 = calc.joinList(newDataset, 'name'); //nameだけ取り出す
     const newArray = array1.concat(array2);
     //---------------------------------------
+    //出力
     const sp = <span>{newArray.join()}</span>;
     // <span>友引 芒種</span>
     return (
@@ -81,7 +83,23 @@ const weekDayFG = (
         {sp}
       </div>
     );
+    //ここまでのreturnをoutput2Listに詰め込む
   });
+  {
+    /*
+    <div class="ht-row flex2">
+      <div class="day flex1">
+        <button type="button" name="2024/07/06">
+          6
+        </button>
+        <span>赤口小暑</span>
+      </div>
+    </div>
+    <div class="day flex1"></div>
+    <div class="day flex1"></div>
+    :
+  */
+  }
   const output = (
     <div className="ht-row flex2">
       {output2List.map((d) => {
@@ -91,6 +109,51 @@ const weekDayFG = (
   );
   return output;
 };
+// ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
+// 1週間のイベント表示 一行分
+// const weekDayEventFG = () =>
+//   // ctDate: string,
+//   // weeksNum: number,
+//   // dataset: holidayList[],
+//   {
+//     const output2List: JSX.Element[] = [<span>a</span>];
+//     const output = (
+//       <div className="ht-row flex2">
+//         {output2List.map((d) => {
+//           return d;
+//         })}
+//       </div>
+//     );
+//     return output;
+//   };
+
+// ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
+//イベント５行分
+const weekEvent = (
+  // ctDate: string,
+  // weeksNum: number,
+  // dataSet: holidayList[],
+  count = 1, //行数
+) => {
+  const output: JSX.Element[] = [];
+  for (let i = 0; i < count; i++) {
+    //１行分
+    // output.push(weekDayEventFG()); //ctDate, weeksNum, dataSet);
+    const output2List: JSX.Element[] = [
+      <div>01234567890123456789</div>,
+      <div>aaaaaaaaaaaaaaaaaaa</div>,
+    ];
+    output.push(
+      <div className="ht-row flex2">
+        {output2List.map((d) => {
+          return d;
+        })}
+      </div>,
+    );
+  }
+  return output;
+};
+
 // 月、年、今日ボタン処理
 export const useCounter = (initialValue = 0) => {
   const [countx, setCount] = useState(initialValue);
@@ -147,7 +210,7 @@ export const Calendar = () => {
     // },
   ];
   const betweenArray = calc.getDatesBetween(
-    calendarDates.firstDate,
+    calendarDates.firstDate, //月初め１日から５５日
     //calendarDates.lastDate+2週目の土曜日までをDate配列で
     calc.getSpecificDayDate(
       6, //土曜日
@@ -162,10 +225,15 @@ export const Calendar = () => {
   const result3 = Holiday(result2); //土用の丑の日
   holidayList = holidayList.concat(result2, result3); //配列結合シャローコピー
 
-  calc.dateSort(holidayList,["date","order"]);
-  console.log(holidayList);
+  calc.dateSort(holidayList, ['date', 'order']);
+  // console.log(holidayList);
 
   // ConfigDataGet();
+
+  // const ary = calc.create2DimArray(8);
+  // // const ary = ['A', 'B', 'C'];
+  // const [first] = ary;
+  // console.log(first, ary);
 
   // -----------------------------Display-Calendar-------------------------------------
   return (
@@ -247,11 +315,22 @@ export const Calendar = () => {
                 {/* <div className="day flex1 holiday today"></div> */}
               </div>
               <div className="ht-row-container possec2">
+                {/* 日付行 */}
                 {weekDayFG(
                   calendarDates.firstDateStr as string,
                   0,
                   holidayList,
                 )}
+
+                {/* イベント行 */}
+                {
+                  weekEvent(5).map((val) => {
+                    return val;
+                  })
+                  // calendarDates.firstDateStr as string,
+                  // 0,
+                  // holidayList,
+                }
 
                 {/* <div className="ht-row flex2">
                   <div className="day flex1">

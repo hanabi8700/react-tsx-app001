@@ -21,15 +21,15 @@
     "noFallthroughCasesInSwitch": true,
 
     /* import Alias 追加*/
-    /* baseUrl … 絶対パス指定する場合の起点をどこにするか */
+    /* baseUrl … 絶対パス指定する場合の起点をどこにするか TSConfigから見て*/
     /* paths   … baseUrl からの相対パスでマッピングされるパスを指定できる*/
-    "baseUrl": "src",
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["../src/*"],
-      "~/*": ["../public/*"]
+      "@/*": ["honban/src/*"],
+      "~/*": ["public/*"]
     }
   },
-  "include": ["src", ".eslintrc.cjs", "public/CalenderLib.tsx", "public/FsPromiss.tsx"],
-  "exclude": ["src/sample*/*"],
+  "include": ["honban/src"],
+  "exclude": ["src2/sample*/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
