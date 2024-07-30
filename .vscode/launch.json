@@ -8,7 +8,7 @@
       "type": "msedge",
       "request": "launch",
       "name": "localhost に対して Edge を起動する デバッグ",
-      "url": "http://localhost:5173",
+      "url": "http://localhost:3000",
       "webRoot": "${workspaceFolder}"
     }
   ]

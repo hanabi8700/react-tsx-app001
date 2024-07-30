@@ -4,8 +4,9 @@ import { useCallback, useState } from 'react';
 import * as calc from '~/CalenderLib';
 import './Calendar.css';
 import Rokuyo, { holidayList } from './Rokuyo';
+
 import Holiday from './Holiday';
-// import ConfigDataGet from './ConfigDataGet';
+import { ConfigDataGet } from './ConfigDataGet';
 
 // export const fetchUrlArray = () => {
 //   const url = [
@@ -15,8 +16,10 @@ import Holiday from './Holiday';
 //     'https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/holiday003',
 //   ];
 // };
+//-----------------------------------------------------
 // １週間のバックグラウンド関数
 // ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
+//-----------------------------------------------------
 const weekDayBG = (
   ctDate: string,
   weeksNum: number,
@@ -43,8 +46,10 @@ const weekDayBG = (
     return <div key={index} className={cName}></div>;
   });
 };
+//-----------------------------------------------------
 // 1週間のフォアグラウンド関数
 // ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
+//-----------------------------------------------------
 const weekDayFG = (
   ctDate: string,
   weeksNum: number,
@@ -53,7 +58,7 @@ const weekDayFG = (
   const weekdayArray = calc.getWeekDay7(ctDate, weeksNum);
   //today.format="2024/06/05"
   // let newDataset:string[];
-  const output2List = weekdayArray.map((d, index) => {
+  const event2List = weekdayArray.map((d, index) => {
     const bt = (
       <button type="button" name={d.date}>
         {d.dateOnData}
@@ -102,59 +107,85 @@ const weekDayFG = (
   }
   const output = (
     <div className="ht-row flex2">
-      {output2List.map((d) => {
+      {event2List.map((d) => {
         return d;
       })}
     </div>
   );
   return output;
 };
+//-----------------------------------------------------
 // ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
 // 1週間のイベント表示 一行分
-// const weekDayEventFG = () =>
-//   // ctDate: string,
-//   // weeksNum: number,
-//   // dataset: holidayList[],
-//   {
-//     const output2List: JSX.Element[] = [<span>a</span>];
-//     const output = (
-//       <div className="ht-row flex2">
-//         {output2List.map((d) => {
-//           return d;
-//         })}
-//       </div>
-//     );
-//     return output;
-//   };
-
-// ctDate:"日付",weeksNum:週番号,dataset:休日オブジェクト
-//イベント５行分
+// イベント５行分
+//----------------------------------------------------
+type Outlets2 = {
+  length: number;
+  color: string;
+  [x: string]: string | number;
+};
+const event2List: Outlets2[][] = [
+  [
+    {
+      date: '2024/07/01',
+      title: '01234567890123456789',
+      length: 3,
+      color: '#7c25ee',
+    },
+    {
+      date: '2024/07/12',
+      title: 'aaaaaaaaaaaaaaaaaaa',
+      length: 2,
+      color: 'blue',
+    },
+  ],
+  [],
+];
 const weekEvent = (
   // ctDate: string,
   // weeksNum: number,
   // dataSet: holidayList[],
+  event2List: Outlets2[][],
   count = 1, //行数
 ) => {
+  // const datalist = calc.create2DimArray(7, 5); //5行7列
+  // console.log(datalist);
+
   const output: JSX.Element[] = [];
+
   for (let i = 0; i < count; i++) {
     //１行分
     // output.push(weekDayEventFG()); //ctDate, weeksNum, dataSet);
-    const output2List: JSX.Element[] = [
-      <div>01234567890123456789</div>,
-      <div>aaaaaaaaaaaaaaaaaaa</div>,
-    ];
+
+    // console.log(event2List);
     output.push(
-      <div className="ht-row flex2">
-        {output2List.map((d) => {
-          return d;
+      // < className="ht-row flex2">
+      <>
+        {event2List[i].map((d, index) => {
+          const lengthOut = 'calc(' + (100 / 7) * d.length + '%)';
+          return (
+            <div
+              key={index}
+              className="calendar-event3"
+              style={{
+                backgroundColor: d.color,
+                overflow: 'hidden',
+                flexBasis: lengthOut,
+              }}
+            >
+              {d.title}
+            </div>
+          );
         })}
-      </div>,
+      </>,
     );
   }
   return output;
 };
-
+//-----------------------------------------------------
 // 月、年、今日ボタン処理
+//-----------------------------------------------------
+
 export const useCounter = (initialValue = 0) => {
   const [countx, setCount] = useState(initialValue);
 
@@ -168,9 +199,10 @@ export const useCounter = (initialValue = 0) => {
   return { countx, incrementM, decrementM, incrementY, decrementY, reset };
 };
 
-//-------------------
+//-----------------------------------------------------
 // カレンダー本体
-//-------------------
+//-----------------------------------------------------
+
 export const Calendar = () => {
   console.log('Calendar');
   const { countx, incrementM, decrementM, incrementY, decrementY, reset } =
@@ -226,14 +258,19 @@ export const Calendar = () => {
   holidayList = holidayList.concat(result2, result3); //配列結合シャローコピー
 
   calc.dateSort(holidayList, ['date', 'order']);
+
   // console.log(holidayList);
+  const baseUrl = '/cgi-bin/webcalhana/hanafullcal.py';
+  const startDateStr = calc.getFormatDateTime(
+    calendarDates.prevDateLastWeek as Date,
+  );
+  const endDateStr = calc.getFormatDateTime(
+    calendarDates.nextDateFirstWeek as Date,
+  );
+  console.log('Date', startDateStr, endDateStr);
 
-  // ConfigDataGet();
-
-  // const ary = calc.create2DimArray(8);
-  // // const ary = ['A', 'B', 'C'];
-  // const [first] = ary;
-  // console.log(first, ary);
+  const dd = ConfigDataGet(baseUrl, startDateStr, endDateStr);
+  console.log(dd);
 
   // -----------------------------Display-Calendar-------------------------------------
   return (
@@ -324,8 +361,12 @@ export const Calendar = () => {
 
                 {/* イベント行 */}
                 {
-                  weekEvent(5).map((val) => {
-                    return val;
+                  weekEvent(event2List, 1).map((val, index) => {
+                    return (
+                      <div key={index} className="ht-row flex2">
+                        {val}
+                      </div>
+                    );
                   })
                   // calendarDates.firstDateStr as string,
                   // 0,

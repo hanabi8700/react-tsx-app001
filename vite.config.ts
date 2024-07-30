@@ -35,7 +35,24 @@ export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
     server: {
       port: 3000,
       open: true,
+      proxy: {
+        '/cgi-bin': {
+          target: 'https://hanamaru8700.com/',
+          changeOrigin: true,
+          // rewrite: (path) => path.replace(/^\/api/, ''),
+        },
+        '/cal': {
+          target:
+            'https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/cal/, ''),
+        },
+      },
     },
+    // # "https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/webcal",
+    // # "https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/holiday",
+    // # "https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/holiday003",
+
     // コンパイル後のベースアドレス,dev,build
     // ビルド後のindex.htmlファイル内でのcss,javascriptのリンクを相対にする
     //  <script src="./assets/honban101-bundle.js"></script>

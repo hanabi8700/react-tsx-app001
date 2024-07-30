@@ -18,18 +18,18 @@
 
 export interface ObjectLiteralLike0 {
   today: Date;
-  date: Date;
-  currentMonth: number;
-  currentYear: number;
-  firstDate: Date;
-  lastDate: Date;
-  firstDateStr?: string;
-  lastDayIndex?: number;
-  lastDayDate?: number;
-  prevLastDate?: Date;
-  prevLastDayDate?: number;
-  prevDateLastWeek?: Date;
-  nextDateFirstWeek?: Date;
+  date: Date; //指定の日付
+  currentMonth: number; //指定の日付の月
+  currentYear: number; //指定の日付の年
+  firstDate: Date; //月始めのDate
+  lastDate: Date; //月末のDate
+  firstDateStr?: string; //月初String
+  lastDayIndex?: number; //月末のGetDay
+  lastDayDate?: number; //月末のGetDate
+  prevLastDate?: Date; //先月末日のDate
+  prevLastDayDate?: number; //先月末日GetDate
+  prevDateLastWeek?: Date; //月初の週の日曜日
+  nextDateFirstWeek?: Date; //月末の週の土曜日
   // [x: string]: string | number | Date;
 }
 export type EventType = {
@@ -40,8 +40,8 @@ export type EventType = {
 };
 
 //****************************************************
-// CalenderLib() or CalenderLib("2024/04/01")
-export const CalenderLib = (dateString1: string = '') => {
+// CalenderLib() or CalenderLib("2024/04/01",14)14dys=2weeks
+export const CalenderLib = (dateString1: string = '', nextDateWeeks = 0) => {
   // get prev month current month and next month days
   // get current date
   const date = stringToDate(dateString1);
@@ -66,12 +66,12 @@ export const CalenderLib = (dateString1: string = '') => {
   dateStructure.prevLastDate = new Date(currentYear, currentMonth, 0);
   dateStructure.prevLastDayDate = dateStructure.prevLastDate.getDate();
   dateStructure.prevDateLastWeek = new Date(
-    dateStructure.prevLastDate.getTime() -
-      dateStructure.prevLastDate.getDay() * 24 * 60 * 60 * 1000,
+    dateStructure.firstDate.getTime() -
+      dateStructure.firstDate.getDay() * 24 * 60 * 60 * 1000,
   );
   dateStructure.nextDateFirstWeek = new Date(
     dateStructure.lastDate.getTime() +
-      (14 + 7 - dateStructure.lastDate.getDay() - 1) * 86400 * 1000,
+      (nextDateWeeks + 7 - dateStructure.lastDate.getDay() - 1) * 86400 * 1000,
   );
 
   // dateStructure.prevLastDayDate - dateStructure.prevLastDate.getDay();
@@ -712,6 +712,7 @@ export const eachSlice = (ary: number[], size: number): number[][] =>
 //[...arr].forEach((v,i) => {})//forの代わり
 //2次元配列の生成と値の初期化 create
 //fillを使用して初期化した場合(Row列,Col行)
+//------------------------------------------
 export const create2DimArray = (
   eleRow: number, //列
   element: number = 1, //行
@@ -737,7 +738,9 @@ export const create2DimArray = (
 
   return array;
 };
+//-----------------------------------------------------
 //2次元配列から特定の列だけ取り出し
+//-----------------------------------------------------
 export const getRow2DimArray = (
   arr2d: any[][],
   eleRow: number = 1,
@@ -745,10 +748,11 @@ export const getRow2DimArray = (
   const picked = arr2d.map((item) => item[eleRow]);
   return picked;
 };
-
+//-----------------------------------------------------
 //二次元配列から一次元配列への変換
 //Down Ndim to N-1dim
 //reduce & concat 1回につきカッコが一つ外れる。カッコがない要素はそのまま出力される。
+//-----------------------------------------------------
 export const get2dTo1d = (arr2d: any[][]) => {
   const array1d = arr2d.reduce((newArr, elem) => {
     return newArr.concat(elem); //elem:[1,2]
@@ -761,15 +765,17 @@ export const get2dTo1d = (arr2d: any[][]) => {
   // }
   return array1d;
 };
-
+//-----------------------------------------------------
 // 二次元配列の姿の文字列を作成する
+//-----------------------------------------------------
 export const str2d = (arr2d: any[][]) => {
   const str = arr2d.map((row) => row.join(' ')).join('\n');
   return str;
 };
-
+//-----------------------------------------------------
 //二次元配列を連想配列に変換する、０列目はオブジェクトのキー
 //[["氏名", "年齢", "性別"],  ["今野 智博", "75", "男"]]
+//-----------------------------------------------------
 export const conv2dToObj = (arr2d: any[][]) => {
   const keys = arr2d[0];
   const newObj = arr2d.slice(1).map((item) => {
@@ -780,10 +786,12 @@ export const conv2dToObj = (arr2d: any[][]) => {
   });
   return newObj;
 };
+//-----------------------------------------------------
 //TwoDimensional、false:第1引数のarr1の下側に、第2引数のarr2を追加(push)する。
 //true:第1引数のarr3の右側に、第2引数のarr4を追加(push)する
 //[第3引数]axis: false縦方向に結合、axis: true横方向に結合
 //一次元配列に値をconcatする際と同様に、二次元配列と二次元配列を非破壊的に結合する。
+//-----------------------------------------------------
 export const concat2DimArray = (
   array1: any[],
   array2: any[],
@@ -806,8 +814,10 @@ export const concat2DimArray = (
   }
   return array3;
 };
+//-----------------------------------------------------
 //一次元配列に値をpushする際と同様に、二次元配列に二次元配列を破壊的に追加する。
 //[第3引数]axis: false縦方向に結合、axis: true横方向に結合
+//-----------------------------------------------------
 export const push2DimArray = (
   array1: any[],
   array2: any[],
@@ -826,4 +836,5 @@ export const push2DimArray = (
     }
   }
 };
-//--------------------------------------------------
+//-----------------------------------------------------
+//-----------------------------------------------------
