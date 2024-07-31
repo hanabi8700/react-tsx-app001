@@ -6,7 +6,7 @@ import './Calendar.css';
 import Rokuyo, { holidayList } from './Rokuyo';
 
 import Holiday from './Holiday';
-import { ConfigDataGet } from './ConfigDataGet';
+import { EventDataGet } from './EventDataGet';
 
 // export const fetchUrlArray = () => {
 //   const url = [
@@ -260,16 +260,17 @@ export const Calendar = () => {
   calc.dateSort(holidayList, ['date', 'order']);
 
   // console.log(holidayList);
-  const baseUrl = '/cgi-bin/webcalhana/hanafullcal.py';
+  const endpointUrl = '/cgi-bin/webcalhana/hanafullcal.py';
   const startDateStr = calc.getFormatDateTime(
     calendarDates.prevDateLastWeek as Date,
   );
   const endDateStr = calc.getFormatDateTime(
     calendarDates.nextDateFirstWeek as Date,
   );
-  console.log('Date', startDateStr, endDateStr);
+  const data = `?start=${startDateStr},end=${endDateStr}`;
+  console.log('Date', startDateStr, endDateStr, data);
 
-  const dd = ConfigDataGet(baseUrl, startDateStr, endDateStr);
+  const dd = EventDataGet('get', endpointUrl, startDateStr, endDateStr);
   console.log(dd);
 
   // -----------------------------Display-Calendar-------------------------------------

@@ -28,7 +28,7 @@ const fetcher = ({ method, url, start, end }: SearchFilterObj) =>
 // plelaod('https://jsonplaceholder.typicode.com/users/1', fetcher);
 //
 //https://hanamaru8700.com/api/hanafullcal.py?start=2024-07-01&end=2024-08-05 4
-export const ConfigDataGet = (
+export const EventDataGet = (
   method: string,
   endpointUrl: string,
   startTime: string,

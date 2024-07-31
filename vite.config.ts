@@ -19,7 +19,7 @@ export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
   // 本番時に適用させるbaseの値
   // if (mode === 'production') {
   if (command === 'build') {
-    //ビルド
+    //ビルド  process.env.BASE_URLになる
     base = '/cgi-bin/hanareact/js/' + product;
   }
   return {
