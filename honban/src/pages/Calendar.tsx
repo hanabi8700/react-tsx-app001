@@ -119,11 +119,11 @@ const weekDayFG = (
 // 1週間のイベント表示 一行分
 // イベント５行分
 //----------------------------------------------------
-type Outlets2 = {
-  length: number;
-  color: string;
-  [x: string]: string | number;
-};
+// type Outlets2 = {
+//   length: number;
+//   color: string;
+//   [x: string]: string | number;
+// };
 interface EventType {
   backgroundColor: string;
   title: string;
@@ -136,72 +136,56 @@ interface EventType {
   length?: number;
 }
 
-const event3list: EventType[] = [
-  {
-    allDay: true,
-    backgroundColor: 'Olive',
-    description: 'トヨタ',
-    shuitem: '種別,その他',
-    start: '2024-07-28T00:00:00+09:00',
-    title: 'TS3Card増額申し込み/その他',
-  },
-  {
-    allDay: true,
-    backgroundColor: 'None',
-    description: 'お墓の管理費2000',
-    shuitem: '種別,コール',
-    start: '2024-08-01T00:00:00+09:00',
-    title: '払込取扱票届く/コール',
-  },
-  {
-    allDay: true,
-    backgroundColor: 'Olive',
-    shuitem: '種別,その他',
-    start: '2024-08-01T00:00:00+09:00',
-    title: '関西みらい銀行振り込み先整理/その他',
-  },
-  {
-    backgroundColor: 'blue',
-    description: '門真運転免許',
-    shuitem: '種別,研修会議',
-    start: '2024-07-30T16:45:00+09:00',
-    stime_s: '16:45 >17:10',
-    title: '免許証について電話する/研修会議',
-  },
-  {
-    backgroundColor: 'None',
-    shuitem: '種別,コール',
-    start: '2024-08-19T11:00:00+09:00',
-    stime_s: '11:00 >11:30',
-    title: '?訪問看護/コール',
-  },
-  {
-    allDay: true,
-    backgroundColor: 'Olive',
-    catitem: 'カテゴリ,メンテナンス',
-    description: '南野',
-    shuitem: '種別,その他',
-    start: '2024-08-22T00:00:00+09:00',
-    title: '車庫のシャッター/その他',
-  },
-];
-const event2List: Outlets2[][] = [
-  [
-    {
-      date: '2024/08/01',
-      title: '01234567890123456789',
-      length: 3,
-      color: '#7c25ee',
-    },
-    {
-      date: '2024/07/28',
-      title: 'aaaaaaaaaaaaaaaaaaa',
-      length: 2,
-      color: 'blue',
-    },
-  ],
-  [],
-];
+// const event3list: EventType[] = [
+//   {
+//     allDay: true,
+//     backgroundColor: 'Olive',
+//     description: 'トヨタ',
+//     shuitem: '種別,その他',
+//     start: '2024-07-28T00:00:00+09:00',
+//     title: 'TS3Card増額申し込み/その他',
+//   },
+//   {
+//     allDay: true,
+//     backgroundColor: 'None',
+//     description: 'お墓の管理費2000',
+//     shuitem: '種別,コール',
+//     start: '2024-08-01T00:00:00+09:00',
+//     title: '払込取扱票届く/コール',
+//   },
+//   {
+//     allDay: true,
+//     backgroundColor: 'Olive',
+//     shuitem: '種別,その他',
+//     start: '2024-08-01T00:00:00+09:00',
+//     title: '関西みらい銀行振り込み先整理/その他',
+//   },
+//   {
+//     backgroundColor: 'blue',
+//     description: '門真運転免許',
+//     shuitem: '種別,研修会議',
+//     start: '2024-07-30T16:45:00+09:00',
+//     stime_s: '16:45 >17:10',
+//     title: '免許証について電話する/研修会議',
+//   },
+//   {
+//     backgroundColor: 'None',
+//     shuitem: '種別,コール',
+//     start: '2024-08-19T11:00:00+09:00',
+//     stime_s: '11:00 >11:30',
+//     title: '?訪問看護/コール',
+//   },
+//   {
+//     allDay: true,
+//     backgroundColor: 'Olive',
+//     catitem: 'カテゴリ,メンテナンス',
+//     description: '南野',
+//     shuitem: '種別,その他',
+//     start: '2024-08-22T00:00:00+09:00',
+//     title: '車庫のシャッター/その他',
+//   },
+// ];
+
 const weekEvent = (
   ctDate: string,
   weeksNum: number,
@@ -212,9 +196,10 @@ const weekEvent = (
   const weekdayArray = calc.getWeekDay7(ctDate, weeksNum);
   const datalist = []; //7列5行
   for (const obj1 of weekdayArray) {
-    const result = data5List.filter(
-      (date1) => calc.getDateWithString(new Date(date1.start)) === obj1.date,
-    );
+    const result = data5List.filter((date1) => {
+      if (date1 === undefined) return false;
+      return calc.getDateWithString(new Date(date1.start as string)) === obj1.date;
+    });
     datalist.push(result);
   }
   console.log('🚀 ~ file: Calendar.tsx:209 ~ datalist:', datalist);
@@ -227,7 +212,7 @@ const weekEvent = (
     //１行分
     // output.push(weekDayEventFG()); //ctDate, weeksNum, dataSet);
     // N行i列のアイテムをまとめる
-    const aa:EventType[] = calc.getRow2DimArray(datalist, i);
+    const aa: EventType[] = calc.getRow2DimArray(datalist, i);
     // console.log(event2List);
     output.push(
       // < className="ht-row flex2">
