@@ -1,5 +1,5 @@
 //import React from 'react';
-import { useCallback, useState } from 'react';
+import { MouseEventHandler, useCallback, useMemo, useState } from 'react';
 // import * as calc from '../../../public/CalenderLib';
 import * as calc from '~/CalenderLib';
 import './Calendar.css';
@@ -124,16 +124,77 @@ type Outlets2 = {
   color: string;
   [x: string]: string | number;
 };
+interface EventType {
+  backgroundColor: string;
+  title: string;
+  shuitem?: string;
+  start?: string;
+  allDay?: boolean;
+  description?: string;
+  stime_s?: string;
+  catitem?: string;
+  length?: number;
+}
+
+const event3list: EventType[] = [
+  {
+    allDay: true,
+    backgroundColor: 'Olive',
+    description: 'トヨタ',
+    shuitem: '種別,その他',
+    start: '2024-07-28T00:00:00+09:00',
+    title: 'TS3Card増額申し込み/その他',
+  },
+  {
+    allDay: true,
+    backgroundColor: 'None',
+    description: 'お墓の管理費2000',
+    shuitem: '種別,コール',
+    start: '2024-08-01T00:00:00+09:00',
+    title: '払込取扱票届く/コール',
+  },
+  {
+    allDay: true,
+    backgroundColor: 'Olive',
+    shuitem: '種別,その他',
+    start: '2024-08-01T00:00:00+09:00',
+    title: '関西みらい銀行振り込み先整理/その他',
+  },
+  {
+    backgroundColor: 'blue',
+    description: '門真運転免許',
+    shuitem: '種別,研修会議',
+    start: '2024-07-30T16:45:00+09:00',
+    stime_s: '16:45 >17:10',
+    title: '免許証について電話する/研修会議',
+  },
+  {
+    backgroundColor: 'None',
+    shuitem: '種別,コール',
+    start: '2024-08-19T11:00:00+09:00',
+    stime_s: '11:00 >11:30',
+    title: '?訪問看護/コール',
+  },
+  {
+    allDay: true,
+    backgroundColor: 'Olive',
+    catitem: 'カテゴリ,メンテナンス',
+    description: '南野',
+    shuitem: '種別,その他',
+    start: '2024-08-22T00:00:00+09:00',
+    title: '車庫のシャッター/その他',
+  },
+];
 const event2List: Outlets2[][] = [
   [
     {
-      date: '2024/07/01',
+      date: '2024/08/01',
       title: '01234567890123456789',
       length: 3,
       color: '#7c25ee',
     },
     {
-      date: '2024/07/12',
+      date: '2024/07/28',
       title: 'aaaaaaaaaaaaaaaaaaa',
       length: 2,
       color: 'blue',
@@ -142,33 +203,54 @@ const event2List: Outlets2[][] = [
   [],
 ];
 const weekEvent = (
-  // ctDate: string,
-  // weeksNum: number,
+  ctDate: string,
+  weeksNum: number,
   // dataSet: holidayList[],
-  event2List: Outlets2[][],
+  data5List: EventType[],
   count = 1, //行数
 ) => {
-  // const datalist = calc.create2DimArray(7, 5); //5行7列
-  // console.log(datalist);
+  const weekdayArray = calc.getWeekDay7(ctDate, weeksNum);
+  const datalist = []; //7列5行
+  for (const obj1 of weekdayArray) {
+    const result = data5List.filter(
+      (date1) => calc.getDateWithString(new Date(date1.start)) === obj1.date,
+    );
+    datalist.push(result);
+  }
+  console.log('🚀 ~ file: Calendar.tsx:209 ~ datalist:', datalist);
+  const aa = calc.getRow2DimArray(datalist, 1);
+  console.log('🚀 ~ file: Calendar.tsx:210 ~ aa:', aa);
 
   const output: JSX.Element[] = [];
 
   for (let i = 0; i < count; i++) {
     //１行分
     // output.push(weekDayEventFG()); //ctDate, weeksNum, dataSet);
-
+    // N行i列のアイテムをまとめる
+    const aa:EventType[] = calc.getRow2DimArray(datalist, i);
     // console.log(event2List);
     output.push(
       // < className="ht-row flex2">
       <>
-        {event2List[i].map((d, index) => {
+        {aa.map((d, index) => {
+          if (d && d.backgroundColor === 'None') {
+            d.backgroundColor = 'rgba(0, 0, 128, 0.3)';
+          }
+          if (d === undefined)
+            d = {
+              length: 1,
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              title: 'd',
+            };
+          //-------------------------------------------------
+          d.length = 1;
           const lengthOut = 'calc(' + (100 / 7) * d.length + '%)';
           return (
             <div
               key={index}
               className="calendar-event3"
               style={{
-                backgroundColor: d.color,
+                backgroundColor: d.backgroundColor,
                 overflow: 'hidden',
                 flexBasis: lengthOut,
               }}
@@ -186,8 +268,25 @@ const weekEvent = (
 // 月、年、今日ボタン処理
 //-----------------------------------------------------
 
+const Button = (
+  handleClick: MouseEventHandler<HTMLButtonElement> | undefined,
+  value: string | number,
+  className = '',
+) =>
+  useMemo(() => {
+    console.log('Button child component', value);
+    return (
+      <>
+        <button type="button" onClick={handleClick} className={className}>
+          {value}
+        </button>
+      </>
+    );
+  }, []);
+
 export const useCounter = (initialValue = 0) => {
   const [countx, setCount] = useState(initialValue);
+  console.log('ボタン', countx);
 
   const incrementM = useCallback(() => setCount((x) => x + 1), []);
   const decrementM = useCallback(() => setCount((x) => x - 1), []);
@@ -260,19 +359,39 @@ export const Calendar = () => {
   calc.dateSort(holidayList, ['date', 'order']);
 
   // console.log(holidayList);
-  const endpointUrl = '/cgi-bin/webcalhana/hanafullcal.py';
+  // const endpointUrl = 'hanaflask/index.cgi/hanacalen/holiday';
+  const endpointUrl = 'webcalhana/hanafullcal.py';
+
   const startDateStr = calc.getFormatDateTime(
     calendarDates.prevDateLastWeek as Date,
   );
   const endDateStr = calc.getFormatDateTime(
     calendarDates.nextDateFirstWeek as Date,
   );
-  const data = `?start=${startDateStr},end=${endDateStr}`;
-  console.log('Date', startDateStr, endDateStr, data);
 
-  const dd = EventDataGet('get', endpointUrl, startDateStr, endDateStr);
-  console.log(dd);
+  const dataObj = EventDataGet(endpointUrl, startDateStr, endDateStr);
+  // const dataObj2 = useCallback(
+  //   (dataObj = EventDataGet(endpointUrl, startDateStr, endDateStr)),
+  //   [startDateStr, endDateStr],
+  // );
 
+  // console.log(dataObj, dataObj.data, dataObj.iserror);
+  console.log(
+    'data',
+    dataObj.iserror ? dataObj.iserror.config.url : dataObj.data,
+    dataObj.iserror ? dataObj.iserror.message : '',
+  );
+  console.log('Calendar-end');
+  let dataEvent = [];
+  if (dataObj.data) {
+    // const data1 = JSON.stringify(dataObj.data, null, 2);
+    dataEvent = calc.deepCloneObj(dataObj.data);
+    console.log(
+      '🚀 ~ file: Calendar.tsx:384 ~ Calendar ~ dataEvent:',
+      dataEvent,
+    );
+  }
+  //該当クリック日付枠のイベントを検索{date: '2022-04-12', index: 0, randomId: 89747775}
   // -----------------------------Display-Calendar-------------------------------------
   return (
     <>
@@ -280,46 +399,17 @@ export const Calendar = () => {
       <div className="calendar-wrappe">
         <div className="bt_hedder">
           <form action="" className="nav-calendar" name="nav-calendar">
-            <button className="bt_preyear" type="button" onClick={decrementY}>
-              前年
-            </button>
-            <button
-              className="bt_prmonth"
-              type="button"
-              onClick={decrementM}
-              // onClick={() => handleOnClick('prevMonth')}
-            >
-              前月
-            </button>
+            {Button(decrementY, '前年', 'bt_preyear')}
+            {Button(decrementM, '前月', 'bt_prmonth')}
             <span className="bt_ddyear">{ddYear}</span>
             <span className="bt_ddmonth">{ddMonth}月</span>
             <span className="bt_ddwareki">({ddWareki})</span>
             <span>{countx}</span>
-            <button
-              className="bt_postmonth"
-              type="button"
-              // onClick={() => handleOnClick('nextMonth')}
-              onClick={incrementM}
-            >
-              次月
-            </button>
-            <button
-              className="bt_postyear"
-              type="button"
-              onClick={incrementY}
-              // onClick={() => handleOnClick('nextYear')}
-            >
-              次年
-            </button>
-            <button
-              className="bt_posttoday"
-              type="button"
-              onClick={reset}
-              // onClick={() => handleOnClick('nextYear')}
-            >
-              今日
-            </button>
+            {Button(incrementM, '次月', 'bt_postmonth')}
+            {Button(incrementY, '次年', 'bt_postyear')}
+            {Button(reset, '今日', 'bt_posttoday')}
             <input className="bt_today" type="date" name="birth" />
+            {/* {Button('', '移動', 'bt_idou')} */}
             <button className="bt_idou" type="button">
               移動
             </button>
@@ -361,80 +451,18 @@ export const Calendar = () => {
                 )}
 
                 {/* イベント行 */}
-                {
-                  weekEvent(event2List, 1).map((val, index) => {
-                    return (
-                      <div key={index} className="ht-row flex2">
-                        {val}
-                      </div>
-                    );
-                  })
-                  // calendarDates.firstDateStr as string,
-                  // 0,
-                  // holidayList,
-                }
-
-                {/* <div className="ht-row flex2">
-                  <div className="day flex1">
-                    <button type="button">1</button>
-                    <button type="submit" id="huge" name="huge">
-                      huge
-                    </button>
-                  </div>
-                  <div className="day flex1">
-                    <button type="button">2</button>
-                  </div>
-                  <div className="day flex1">
-                    <button type="button">3</button>
-                  </div>
-                  <div className="day flex1">
-                    <button type="button">4</button>
-                    <span>友引 芒種</span>
-                  </div>
-                  <div className="day flex1">
-                    <button type="button">5</button>
-                  </div>
-                  <div className="day flex1">
-                    <button type="button">6</button>
-                  </div>
-                  <div className="day flex1">
-                    <button type="button">7</button>
-                  </div>
-                </div>
-                <div className="ht-row flex2">
-                  <div
-                    className="ht-row-segment"
-                    style={{ flexBasis: '14%' }}
-                  ></div>
-                  <div
-                    className="ht-row-segment calendar-event3"
-                    style={{
-                      backgroundColor: '#4a794a',
-                      overflow: 'hidden',
-                      flexBasis: '28%',
-                    }}
-                  >
-                    運動公園 Flex 123456789
-                  </div>
-                  <div className="ht-row-segment"></div>
-                </div>
-                <div className="ht-row segment flex2">
-                  <div
-                    className="ht-row-segment"
-                    style={{ flexBasis: '29%' }}
-                  ></div>
-
-                  <div
-                    className="calendar-event3"
-                    style={{
-                      backgroundColor: '#7c25ee',
-                      overflow: 'hidden',
-                      flexBasis: '54%',
-                    }}
-                  >
-                    案内ウェブサイト~オンラインショップ
-                  </div>
-                </div> */}
+                {weekEvent(
+                  calendarDates.firstDateStr as string,
+                  0,
+                  dataEvent,
+                  5,
+                ).map((val, index) => {
+                  return (
+                    <div key={index} className="ht-row flex2">
+                      {val}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             {/* ２週目 */}
@@ -452,6 +480,19 @@ export const Calendar = () => {
                   1,
                   holidayList,
                 )}
+                {/* イベント行 */}
+                {weekEvent(
+                  calendarDates.firstDateStr as string,
+                  1,
+                  dataEvent,
+                  5,
+                ).map((val, index) => {
+                  return (
+                    <div key={index} className="ht-row flex2">
+                      {val}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             {/* ３週目 */}
@@ -469,6 +510,19 @@ export const Calendar = () => {
                   2,
                   holidayList,
                 )}
+                {/* イベント行 */}
+                {weekEvent(
+                  calendarDates.firstDateStr as string,
+                  2,
+                  dataEvent,
+                  5,
+                ).map((val, index) => {
+                  return (
+                    <div key={index} className="ht-row flex2">
+                      {val}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             {/* ４週目 */}
@@ -486,6 +540,19 @@ export const Calendar = () => {
                   3,
                   holidayList,
                 )}
+                {/* イベント行 */}
+                {weekEvent(
+                  calendarDates.firstDateStr as string,
+                  3,
+                  dataEvent,
+                  5,
+                ).map((val, index) => {
+                  return (
+                    <div key={index} className="ht-row flex2">
+                      {val}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             {/* ５週目 */}
@@ -503,6 +570,19 @@ export const Calendar = () => {
                   4,
                   holidayList,
                 )}
+                {/* イベント行 */}
+                {weekEvent(
+                  calendarDates.firstDateStr as string,
+                  4,
+                  dataEvent,
+                  5,
+                ).map((val, index) => {
+                  return (
+                    <div key={index} className="ht-row flex2">
+                      {val}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             {/* ６週目 */}
@@ -520,6 +600,19 @@ export const Calendar = () => {
                   5,
                   holidayList,
                 )}
+                {/* イベント行 */}
+                {weekEvent(
+                  calendarDates.firstDateStr as string,
+                  5,
+                  dataEvent,
+                  5,
+                ).map((val, index) => {
+                  return (
+                    <div key={index} className="ht-row flex2">
+                      {val}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             {/* ７週目 */}
@@ -537,6 +630,19 @@ export const Calendar = () => {
                   6,
                   holidayList,
                 )}
+                {/* イベント行 */}
+                {weekEvent(
+                  calendarDates.firstDateStr as string,
+                  6,
+                  dataEvent,
+                  5,
+                ).map((val, index) => {
+                  return (
+                    <div key={index} className="ht-row flex2">
+                      {val}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             {/* ８週目 */}
@@ -554,6 +660,19 @@ export const Calendar = () => {
                   7,
                   holidayList,
                 )}
+                {/* イベント行 */}
+                {weekEvent(
+                  calendarDates.firstDateStr as string,
+                  7,
+                  dataEvent,
+                  5,
+                ).map((val, index) => {
+                  return (
+                    <div key={index} className="ht-row flex2">
+                      {val}
+                    </div>
+                  );
+                })}
               </div>
             </div>
             {/* End */}

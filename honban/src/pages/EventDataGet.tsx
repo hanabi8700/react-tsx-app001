@@ -1,49 +1,35 @@
 //axiosをimport
-import axios from 'axios';
 import useSWR from 'swr';
+import fetchers from './Fetchers';
 
-type SearchFilterObj = {
-  method: string;
-  url: string;
-  start: string;
-  end: string;
-  data?: string;
-};
-// async function fetcher(key: string) {
-//   // keyはuseSWR()の第１引数で渡されたURL
-//   return fetch(key).then((res) => res.json() as Promise<User | null>);
-// }
-const fetcher = ({ method, url, start, end }: SearchFilterObj) =>
-  axios({
-    method,
-    url,
-    params: {
-      start,
-      end,
-    },
+// proxy '/cgi-bin/webcalhana/hanafullcal.py?start=2024-07-01&end=2024-08-05',
+//hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/holiday?start=2022-03-27T00%3A00%3A00%2B09%3A00&end=2022-05-08T00%3A00%3A00%2B09%3A00
 
-    paramsSerializer: { indexes: null },
-  }).then((res) => res.data);
 // データの事前読み込み（当然キャッシュに保存される）
 // plelaod('https://jsonplaceholder.typicode.com/users/1', fetcher);
-//
-//https://hanamaru8700.com/api/hanafullcal.py?start=2024-07-01&end=2024-08-05 4
+// 'https://jsonplaceholder.typicode.com/users/1',
+
 export const EventDataGet = (
-  method: string,
+  // method: string,
   endpointUrl: string,
   startTime: string,
   endTime: string,
 ) => {
-  const { data, error, isLoading } = useSWR(
-    { method, url: endpointUrl, start: startTime, end: endTime },
-    fetcher,
-  );
+  // 第一引数にキャッシュキー、第二引数にfetcherを渡す。fetcherは事前に用意する必要がある
+  // 第三引数にはoptionを渡せるが省略も可能
+  // await delay();
+  console.log('dataGet' )
+  // const url = `${endpointUrl}?start=2022-03-27T00%3A00%3A00%2B09%3A00&end=2022-05-08T00%3A00%3A00%2B09%3A00`;
+  const url = `${endpointUrl}?start=${startTime}&end=${endTime}`;
+  const { data, error, isLoading } = useSWR(url, fetchers, {
+    shouldRetryOnError: false,
+    dedupingInterval: 60 * 1000,
+  });
+  //null:使いません。2：明示的に何個インデントが指定されている
+  // console.log('data', JSON.stringify(data, null, 2));
   return {
     data: data,
     iserror: error,
     isLoading,
   };
 };
-// '/cgi-bin/webcalhana/hanafullcal.py?start=2024-07-01&end=2024-08-05',
-// '/cal/holiday?start=2024-07-01&end=2024-08-05',
-// 'https://jsonplaceholder.typicode.com/users/1',

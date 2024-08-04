@@ -744,7 +744,7 @@ export const create2DimArray = (
 export const getRow2DimArray = (
   arr2d: any[][],
   eleRow: number = 1,
-): number[] => {
+): any[] => {
   const picked = arr2d.map((item) => item[eleRow]);
   return picked;
 };
