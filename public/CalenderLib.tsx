@@ -242,8 +242,13 @@ export const getDateDiff = (
 //-----------------------------------
 // 日付("2024-5-1")をDate変換される
 //-----------------------------------
-const stringToDate = (dateString1: string = ''): Date => {
-  const dt = dateString1 ? new Date(dateString1) : new Date();
+export const stringToDate = (
+  dateString1: string,
+  pulas: number = 0,
+): Date => {
+  const dt =
+    "" !== dateString1 ? new Date(dateString1) : new Date();
+  dt.setDate(dt.getDate() + pulas);
   return dt;
 };
 
@@ -434,11 +439,11 @@ export function* range(begin: number, end: number, interval = 1) {
 }
 //Deep Copy
 //structuredClone(value, transfer);
-//Deep Copy
+//１．Deep Copy
 // export function deepCloneObj2(originalObject) {
 //   return JSON.parse(JSON.stringify(originalObject));
 // }
-//Deep Copy
+//２．Deep Copy
 export function deepCloneObj(obj: any): any {
   if (typeof obj === 'object') {
     if (Array.isArray(obj)) {
@@ -454,7 +459,7 @@ export function deepCloneObj(obj: any): any {
     return obj;
   }
 }
-//Deep Copy
+//３．Deep Copy
 // export function cloneObject(obj) {
 //   const clone = {};
 //   Object.keys(obj).forEach((key) => {
@@ -511,7 +516,11 @@ export const getWeekDay7 = (
 // };
 // const keys: Array<keyof typeof obj> = Object.keys(obj);
 // const name: string = obj[keys[0]];
+//
+//
+//
 //---------------------
+//オブジェクト配列の指定されたKEYでまとめて文字列の配列を返す
 //join... Object配列[{name:"name"}{...}]をArray["name","name1"...]つなぐ
 // const array2 = calc.joinList(newDataset,"name"); //nameだけ取り出す
 //---------------------
@@ -639,7 +648,7 @@ export function getJapanCalendar(currentDate: Date) {
 // オブジェクト→配列 arr.find(([id, data])=>{})
 //const arr = Object.entries(obj);//id=obj.key,data={obj.data}
 //--------------------------------
-// オブジェクトの配列で特定の値でソートする処理
+// オブジェクト配列で特定の値KEYでソートする処理
 //-------------------------------------
 export const dateSort = (
   //const myObj: {[index: string]:any} = {}
@@ -678,11 +687,11 @@ const compareSort = (
   return result;
 };
 //-------------------------------------
-// 要素入れ替えの処理
+// 要素入れ替えの処理 [3,1],1,2 -> [3,undefine,1]
 // replaceArrayElements(配列, 入れ替え先インデックス, 入れ替えもとインデックス);
 //-------------------------------------
 export function replaceArrayElements(
-  array: [],
+  array: any[],
   targetId: number,
   sourceId: number,
 ) {
@@ -739,17 +748,15 @@ export const create2DimArray = (
   return array;
 };
 //-----------------------------------------------------
-//2次元配列から特定の列だけ取り出し
+//2次元配列から特定の列だけ取り出し(縦列)
+//Array[[a1,b1],[a2,b2],[a3,b3]]=>[b1,b2,b3]
 //-----------------------------------------------------
-export const getRow2DimArray = (
-  arr2d: any[][],
-  eleRow: number = 1,
-): any[] => {
-  const picked = arr2d.map((item) => item[eleRow]);
+export const getRow2DimArray = (arr2d: any[][], eleCol: number = 0): any[] => {
+  const picked = arr2d.map((item) => item[eleCol]);
   return picked;
 };
 //-----------------------------------------------------
-//二次元配列から一次元配列への変換
+//二次元配列[][]から一次元配列[]への変換
 //Down Ndim to N-1dim
 //reduce & concat 1回につきカッコが一つ外れる。カッコがない要素はそのまま出力される。
 //-----------------------------------------------------
@@ -773,7 +780,7 @@ export const str2d = (arr2d: any[][]) => {
   return str;
 };
 //-----------------------------------------------------
-//二次元配列を連想配列に変換する、０列目はオブジェクトのキー
+//二次元配列を連想配列に変換する、０行目はオブジェクトのキー
 //[["氏名", "年齢", "性別"],  ["今野 智博", "75", "男"]]
 //-----------------------------------------------------
 export const conv2dToObj = (arr2d: any[][]) => {
@@ -787,10 +794,15 @@ export const conv2dToObj = (arr2d: any[][]) => {
   return newObj;
 };
 //-----------------------------------------------------
-//TwoDimensional、false:第1引数のarr1の下側に、第2引数のarr2を追加(push)する。
-//true:第1引数のarr3の右側に、第2引数のarr4を追加(push)する
+//TwoDimensional、二次元配列と二次元配列を非破壊的に結合する。
+//false:第1引数のarr1の下側に、第2引数のarr2を追加(concat)する。
+//true :第1引数のarr3の右側に、第2引数のarr4を追加(concat)する
 //[第3引数]axis: false縦方向に結合、axis: true横方向に結合
-//一次元配列に値をconcatする際と同様に、二次元配列と二次元配列を非破壊的に結合する。
+//--- array[Row][Column]...
+//var arr1 = [['A1','B1','C1'],['A2','B2','C2'],['A3','B3','C3']];
+//var arr2 = [['A4','B4','C4'],['A5','B5','C5']];
+//var arr3 = [['A1','B1','C1'],['A2','B2','C2'],['A3','B3','C3']];
+//var arr4 = [['D1','E1'],['D2','E2'],['D3','E3']];
 //-----------------------------------------------------
 export const concat2DimArray = (
   array1: any[],
@@ -837,4 +849,45 @@ export const push2DimArray = (
   }
 };
 //-----------------------------------------------------
+//後入れ先出し（LIFO：Last In First Out）
+//-----------------------------------------------------
+export class Stack {
+  items: any[];
+  constructor() {
+    this.items = [];
+  }
+
+  // 要素の追加
+  push(element: any) {
+    this.items.push(element);
+  }
+
+  // 要素の取り出し
+  pop() {
+    if (this.items.length === 0) return 'スタックは空です。';
+    return this.items.pop();
+  }
+}
+//-----------------------------------------------------
+//先入れ先出し（FIFO：First In First Out）
+//-----------------------------------------------------
+export class Queue {
+  items: any[];
+  constructor() {
+    this.items = [];
+  }
+
+  // 要素の追加
+  enqueue(element: any) {
+    this.items.push(element);
+  }
+
+  // 要素の取り出し
+  dequeue() {
+    if (this.items.length === 0) return 'キューは空です。';
+    return this.items.shift();
+  }
+}
+//-----------------------------------------------------
+//
 //-----------------------------------------------------

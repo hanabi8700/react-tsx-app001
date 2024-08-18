@@ -37,7 +37,7 @@ function Holiday(rokuyo: holidayList[]): holidayList[] {
       // const faultyCopy = JSON.parse(JSON.stringify(data));
 
       const faultyCopy: holidayList = calc.deepCloneObj(data);
-      faultyCopy.order = 31;
+      faultyCopy.order = 31;//30以上49以下
       faultyCopy.name = '土用の丑';
       faultyCopy.type = 'doyoObj';
       return faultyCopy;

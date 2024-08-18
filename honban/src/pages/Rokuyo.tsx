@@ -8,11 +8,14 @@ export interface holidayList {
   date: string;
   name: string;
   holiday: boolean;
-  order: number;
+  order: number; //(11)
   type: string;
   option: number;
   name1?: string;
   option1?: number;
+  duration?: number;
+  id?: number;
+  backgroundColor: string;
 }
 // ホリデイ祝日、六曜２４節気、特別記念日など
 //# ２４節気の定義28(3夏,9秋,15冬,21春)立〇、(0春,12秋)〇分
@@ -30,6 +33,7 @@ function Rokuyo(betweenArray: Date[]) {
       option: dateQreki.sekki24[1] as number,
       name1: dateQreki.si12[0] as string, //十二支取得,
       option1: dateQreki.si12[1] as number,
+      backgroundColor:"None",
     };
     return obj;
   });
@@ -37,4 +41,6 @@ function Rokuyo(betweenArray: Date[]) {
   return result; //一カ月分
 }
 
+//秋分の日以前で、一番近い新月の日を1日目（旧暦8月1日）とし、
+//15日目を中秋とすると決められているからです。
 export default Rokuyo;
