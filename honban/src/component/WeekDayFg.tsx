@@ -34,7 +34,7 @@ export default function WeekDayFg({ ctDate, weeksNum, dataset }: Props) {
       //祝日 dataset 1Day
     });
     const array2 = calc.joinList(newDataset, 'name'); //nameだけ取り出す
-    const newArray = array1.concat(array2);//結合
+    const newArray = array1.concat(array2); //結合
     //---------------------------------------
     //出力
     const sp = <span>{newArray.join()}</span>;

@@ -22,15 +22,16 @@ interface EventType2 extends EventType {
 interface holidayList2 extends holidayList {
   title?: string;
 }
-const debug9 = true;
+const debug9 = false;
 
 // 1 ~ 9 までの乱数を生成関数
 // const numRandom = () => Math.floor(Math.random() * 1000) + 1;
 
 //-----------------------------------------------------
-//同じ日付を配列ごとに集める...週間ごと
-//datalist[[{Date0a},{Date0b}...{Date0e}],[{Date1a}],...[{Date7a}]]
-//datalist=[[日],[月],[火],[水],[木],[金],[土]] =
+//同じ日付ごとをstockedDays[月]を基に配列（週間）に集める
+//result:
+//oneWeekData[[{Date0a},{Date0b}...{Date0e}],[{Date1a}],...[{Date7a}]]
+//oneWeekData=[[日],[月],[火],[水],[木],[金],[土]] =
 //[Array(0), Array(1), Array(2), Array(3), Array(0), Array(0), Array(1)]
 //----------------------------------------------------
 //表示する１週間にまとめる
@@ -56,49 +57,46 @@ export const WeekEvent3 = (
     oneWeekDataStack.push(dobj ? (dobj?.stack as []) : []);
     oneWeekData.push(dobj ? (dobj?.state as []) : []);
   }
-  //oneWeekData:[un,un,un,un,409101,725401,un]
+  //oneWeekData:[[un,un,un,un,409101,725401,un],...  []]
   // debug9 && console.log('datalist', oneWeekData, oneWeekDataStack);
   return [oneWeekData, oneWeekDataStack];
 };
 //-----------------------------------------------------
-// ctDate:"日付",weeksNum:週番号,dataHoliday:休日オブジェクト
+// ctDate:"日付",weeksNum:週番号,dataEvent:イベントオブジェクト配列
+// dataHoliday:休日オブジェクト配列,
+// stockedDays:ひと月のオブジェクト配列[{}...{}]
 // 1週間のイベント表示 一行分
 // イベント５行分を画面に表示
 //----------------------------------------------------
 //
 // const stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
 const weekEvent = (
-  ctDate: string,
+  ctDate: string, //カレンダー月のはじめ
   weeksNum: number,
   dataEvent: EventType2[],
   dataHoliday: holidayList2[],
   stockedDays: stockedDaysType[],
   count = 1, //行数
 ) => {
-  // let stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
-  //stockedDays = [{ date: '2022-03-12', stack: Array(4), stat: Array(4), width: 95 },];
-  const weekdayArray = calc.getWeekDay7(ctDate, weeksNum);
-  // const datalist: EventType[][] = []; //Array[行][列]
-  //5行7列Array=[[行１],[],...[[列１],[],...[]]]
-  //同じ日付を配列ごとに集める  datalist[[{Date0a},{Date0b}...{Date0e}][{Date1a}]...[{Date7a}]]
+  const weekdayArray = calc.getWeekDay7(ctDate, weeksNum); //oneWeek
+  //同じ日付ごとをstockedDays[月]を基に配列（週間）に集める
   const [oneWeekData, oneWeekDataStack] = WeekEvent3(weekdayArray, stockedDays);
-  // dataHoliday,
-  //oneWeekData=[[日],[月],[火],[水],[木],[金],[土]] =↓
-  //[Array(2), Array(0), Array(0), Array(1), Array(2), Array(1), Array(0)]
+  //oneWeekData=[[日],[月],[火],[水],[木],[金],[土]]
+  //=[Array(2), Array(0), Array(0), Array(1), Array(2), Array(1), Array(0)]
+  //=[[日1,...日n],[月1,...月n],...[土1,...土n]]
   //1行目に祝日あり？
 
   const output: JSX.Element[][] = [];
 
-  //datalist=[[日1,...日n],[月1,...月n],...[土1,...土n]]
-  debug9 && console.log('WeeklyEvent...Start', weekdayArray[0]);
-  debug9 && console.log('datalist', oneWeekData, oneWeekDataStack);
+  debug9 && console.log('始めWeeklyEvent...Start', weekdayArray[0]);
+  debug9 && console.log('oneWeekData', oneWeekData, oneWeekDataStack);
   for (let i = 0; i < count; i++) {
+    //count Max行数By週間
     let output3: JSX.Element[] = [];
-
-    //１行分aa=[日i,月i,火i,水i,木i,金i,土i]*count
+    //日[縦枠]ごとにを週間[横枠]ごとに
     const oneRowData: number[] = calc.getRow2DimArray(oneWeekData, i);
     const oneRowDataStack: number[] = calc.getRow2DimArray(oneWeekDataStack, i);
-    //
+    //１行分aa=[日i,月i,火i,水i,木i,金i,土i]*count
     const aa = oneRowData.map((d, index) => {
       debug9 && console.log('行番号', i, d, oneRowDataStack[index]);
       if (d === undefined) return d;
@@ -109,27 +107,44 @@ const weekEvent = (
       // debug9 && console.log('index:', weekdayArray[index].date, aa3);
       return aa3;
     });
-
+    const aa1: (EventType2 | holidayList2)[] = calc.deepCloneObj(aa);
     //------------------------------------------------------------------
-    const bb = aa.map((d, index) => {
+    //週間[横枠]ごとにした、Undefinedにも表示するように変換する
+    const bb = aa1.map((d, index) => {
       if (d && d.backgroundColor === 'None') {
         d.backgroundColor = 'rgba(0, 0, 128, 0.3)';
       } else if (d === undefined) {
         d = {
           //定義されていません、作成する
-          duration: 1,
+          // duration: 1,
           backgroundColor: 'rgba(0, 0, 0, 0.1)',
           title: 'd',
           date: weekdayArray[index].date,
         };
       }
-      //-------------------------------------------------
+      //----------第一日目のみその他はundefined------------------
       d.duration = d.duration ? d.duration : 1;
-      if (d.date === weekdayArray[index].date) return d;
+      let aduration = 1;
+      if (aa[index] !== undefined) {
+        aduration = aa[index]!.duration ? aa[index]!.duration as number : 1;
+      }
+
+      if (index === 0 && d.date && d.date !== weekdayArray[index].date) {
+        //日曜日処理
+        const dayCount = calc.getDateDiff(d.date, weekdayArray[index].date);
+        d.duration = aduration - dayCount < 7 ? aduration - dayCount : 7;
+        return d;
+      }
+      if (d.date === weekdayArray[index].date) {
+        //Duration:1日目
+        d.duration = 7 - index > aduration ? aduration : 7 - index;
+        return d;
+      }
+
       return undefined;
     });
     debug9 && console.log(' bb:', bb);
-
+    //週間[横枠]ごとにしたらHTMLマークアップ言語に変換する
     for (let i = 0; i < bb.length; i++) {
       if (bb[i] !== undefined) {
         const d = bb[i] as EventType2 | holidayList2;
@@ -138,7 +153,7 @@ const weekEvent = (
         const lengthOut = 'calc(' + (100 / 7) * d.duration + '%)';
         const output2 = (
           <div
-            // key={index}
+            key={i}
             className="calendar-event3"
             style={{
               backgroundColor: d.backgroundColor,

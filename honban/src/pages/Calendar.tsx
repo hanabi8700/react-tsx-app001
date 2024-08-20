@@ -71,6 +71,7 @@ export const Calendar = () => {
   const calendarDate = calc.getDateWithString(
     calc.getAddMonthDate2(calc.getDateWithString(date5), countx, true) as Date,
   );
+  debug9 && console.log('カレンダー', calendarDate);
 
   //--------------------------------------------------------
   // date.toLocaleDateString(); // 2020/5/13
@@ -111,12 +112,12 @@ export const Calendar = () => {
     },
     {
       date: '2024/08/13',
-      name: '祝日6',
+      name: '祝日14',
       holiday: true,
       order: 1101,
       type: 'holiday',
       option: 0,
-      duration: 6,
+      duration: 14,
       backgroundColor: 'None',
     },
     {
@@ -153,6 +154,8 @@ export const Calendar = () => {
       calc.getDateWithString(calendarDates.lastDate),
     ),
   );
+  // debug9 && console.log('表示カレンダー全日付', betweenArray);
+
   //--------------------------------------
   // ホリデイ祝日、六曜、特別記念日など取得
   //--------------------------------------
@@ -177,6 +180,8 @@ export const Calendar = () => {
   const endDateStr = calc.getFormatDateTime(
     calendarDates.nextDateFirstWeek as Date,
   );
+  debug9 && console.log('通信データ範囲', startDateStr, endDateStr);
+
   //------------------------
   // 通信
   //------------------------

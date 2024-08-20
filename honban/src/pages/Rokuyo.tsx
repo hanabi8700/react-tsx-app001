@@ -33,7 +33,7 @@ function Rokuyo(betweenArray: Date[]) {
       option: dateQreki.sekki24[1] as number,
       name1: dateQreki.si12[0] as string, //十二支取得,
       option1: dateQreki.si12[1] as number,
-      backgroundColor:"None",
+      backgroundColor: 'None',
     };
     return obj;
   });

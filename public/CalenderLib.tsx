@@ -24,12 +24,12 @@ export interface ObjectLiteralLike0 {
   firstDate: Date; //月始めのDate
   lastDate: Date; //月末のDate
   firstDateStr?: string; //月初String
-  lastDayIndex?: number; //月末のGetDay
-  lastDayDate?: number; //月末のGetDate
+  lastDayIndex?: number; //月末の曜日GetDay
+  lastDayDate?: number; //月末の日にちGetDate
   prevLastDate?: Date; //先月末日のDate
-  prevLastDayDate?: number; //先月末日GetDate
+  prevLastDayDate?: number; //先月末日の日にちGetDate
   prevDateLastWeek?: Date; //月初の週の日曜日
-  nextDateFirstWeek?: Date; //月末の週の土曜日
+  nextDateFirstWeek?: Date; //date月末の週の土曜日
   // [x: string]: string | number | Date;
 }
 export type EventType = {
@@ -45,6 +45,8 @@ export const CalenderLib = (dateString1: string = '', nextDateWeeks = 0) => {
   // get prev month current month and next month days
   // get current date
   const date = stringToDate(dateString1);
+  date.setDate(1); //今年月1日
+  // const date = initDate();//今年月1日
   // get current month
   const currentMonth = date.getMonth();
 
@@ -194,7 +196,7 @@ export const getSpecificDayDate = (
 export const getDatesBetween = (startDate: Date, endDate: Date): Date[] => {
   const dates: Date[] = [];
   // const currentDate = new Date(startDate);
-  const currentDate = startDate;
+  const currentDate = stringToDate(getFormatDateTime(startDate));
   while (currentDate <= endDate) {
     dates.push(new Date(currentDate));
     currentDate.setDate(currentDate.getDate() + 1);
@@ -216,12 +218,12 @@ export const getWeekIndex = (date: Date): number => {
 
 //-----------------------------------------------------------
 // 二つの日付("2024/5/1","2024,5,5")の差分を日数で返す
-// 初日は含まない   dateFlag=0 : 年齢, (default)1: 日数
+// 初日は含まない   dateFlag=false : 年齢, (default)true: 日数
 //-----------------------------------------------------------
 export const getDateDiff = (
   dateString1: string,
   dateString2: string,
-  dateFlag: number = 1,
+  dateFlag: boolean = true,
 ) => {
   const date1 = new Date(dateString1);
   const date2 = new Date(dateString2);
@@ -240,14 +242,10 @@ export const getDateDiff = (
 };
 
 //-----------------------------------
-// 日付("2024-5-1")をDate変換される
+// 日付("2024-5-16")+plusをDate変換される
 //-----------------------------------
-export const stringToDate = (
-  dateString1: string,
-  pulas: number = 0,
-): Date => {
-  const dt =
-    "" !== dateString1 ? new Date(dateString1) : new Date();
+export const stringToDate = (dateString1: string, pulas: number = 0): Date => {
+  const dt = '' !== dateString1 ? new Date(dateString1) : new Date();
   dt.setDate(dt.getDate() + pulas);
   return dt;
 };
