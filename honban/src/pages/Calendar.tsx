@@ -1,7 +1,7 @@
 //import React from 'react';
+import * as calc from '~/CalenderLib';
 import { MouseEventHandler, useCallback, useMemo, useState } from 'react';
 // import * as calc from '../../../public/CalenderLib';
-import * as calc from '~/CalenderLib';
 import './Calendar.css';
 import Rokuyo, { holidayList } from './Rokuyo';
 
@@ -24,7 +24,16 @@ const numRandom = () => Math.floor(Math.random() * 10000) + 1; //ランダム数
 //-----------------------------------------------------
 // 月、年、今日ボタン処理
 //-----------------------------------------------------
-//
+//for HTML
+const buttons = Array.from(document.getElementsByClassName('btn3'));
+buttons.forEach((btn) => {
+  btn.addEventListener('click', function handleClick(event) {
+    console.log('button clicked');
+    console.log(event);
+    console.log(event.target);
+  });
+});
+//React
 const Button = (
   handleClick: MouseEventHandler<HTMLButtonElement> | undefined,
   value: string | number,
@@ -40,7 +49,9 @@ const Button = (
       </>
     );
   }, [className, handleClick, value]);
-
+//-----------------------------------------------------
+// 日付加減算
+//-----------------------------------------------------
 const useCounter = (initialValue = 0) => {
   const [countx, setCount] = useState(initialValue);
   debug8 && console.log('ボタンuseCounter', countx);
@@ -51,8 +62,30 @@ const useCounter = (initialValue = 0) => {
   const decrementY = useCallback(() => setCount((x) => x - 12), []);
 
   const reset = useCallback(() => setCount(initialValue), [initialValue]);
+  const idouBtn = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // console.log(e.target.valueAsDate);
 
-  return { countx, incrementM, decrementM, incrementY, decrementY, reset };
+    const dateNow = new Date();
+    if (e.target.valueAsDate !== null) {
+      const monthT = e.target.valueAsDate.getMonth() + 1;
+      const yearT = e.target.valueAsDate.getFullYear();
+      const mountNow = dateNow.getMonth() + 1;
+      const yearNow = dateNow.getFullYear();
+      const yearDiff = (yearT - yearNow) * 12;
+      const monthDiff = yearDiff + (monthT - mountNow);
+      setCount(() => monthDiff);
+    }
+  }, []);
+
+  return {
+    countx,
+    incrementM,
+    decrementM,
+    incrementY,
+    decrementY,
+    reset,
+    idouBtn,
+  };
 };
 
 //-----------------------------------------------------
@@ -62,8 +95,16 @@ const debug8 = false;
 const debug9 = false;
 export const Calendar = () => {
   debug9 && console.log('Calendar');
-  const { countx, incrementM, decrementM, incrementY, decrementY, reset } =
-    useCounter();
+  const {
+    countx,
+    incrementM,
+    decrementM,
+    incrementY,
+    decrementY,
+    reset,
+    idouBtn,
+  } = useCounter();
+  //
   //dayOfWeeks 日月～土
   const weekDays = calc.getWeekday() as string[];
 
@@ -229,7 +270,7 @@ export const Calendar = () => {
   // -----------------------------Display-Calendar-------------------------------------
   return (
     <>
-      {/* {console.log("fee")} */}
+      {/* //-------------ヘッダー----------------- */}
       <div className="calendar-wrappe">
         <div className="bt_hedder">
           <form action="" className="nav-calendar" name="nav-calendar">
@@ -242,11 +283,15 @@ export const Calendar = () => {
             {Button(incrementM, '次月', 'bt_postmonth')}
             {Button(incrementY, '次年', 'bt_postyear')}
             {Button(reset, '今日', 'bt_posttoday')}
-            <input className="bt_today" type="date" name="birth" />
-            {/* {Button('', '移動', 'bt_idou')} */}
-            <button className="bt_idou" type="button">
-              移動
-            </button>
+            <input
+              className="bt_today"
+              type="date"
+              name="birth"
+              onChange={idouBtn}
+              value={calc.getFormatDateTime(new Date(calendarDate))}
+            />
+            {/* {Button(idouBtn, '移動', 'bt_idou')} */}
+            {/* <button className="btn3" type="button">移動</button> */}
             {/* <!-- 直前のページに戻る --> */}
             {/* <input type="button" onClick={history.back()} value="戻る" /> */}
           </form>

@@ -170,7 +170,19 @@ export const getWeekday = (
 
   return date === 7 ? list[lang] : list[lang][date];
 };
-
+//-----------------------------------------------------
+//春分の日3月、秋分の日9月を求める １９８０年以降 配列で返す
+//-----------------------------------------------------
+export const sprinAutomDay = (year: number = 2024) => {
+  const day1Syubun9 = Math.floor(
+    23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4),
+  );
+  const day2Synbun3 = Math.floor(
+    20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4),
+  );
+  const ap = Array.from([day2Synbun3, day1Syubun9]);
+  return ap;
+};
 //------------------------------------------------------------
 // 年月の指定した曜日の日付を取得する関数
 // 来週の金曜日の日付を取得する場合は、
@@ -321,6 +333,7 @@ export const countLeapYear = (fromYear: number, toYear: number = fromYear) => {
 // ISO: 2022-05-04T15:00:00.000Z <- 協定世界時で出力ので
 // OFFSET -540分*60000 で予めずらす と00:00:00になる
 // new Date('2024.7.21 13:00:04')Zを削除 return 13:00:04.000Z
+// const value = calc.getFormatDateTime(new Date("2024/08/22"))-->"2024-08-22"
 //----------------------------------------------------------
 export const getFormatDateTime = (date: Date, time: number = 0) => {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -423,6 +436,7 @@ export const getAddMonthDate2 = (
 // setDate(32:30+2)は6/15->7/2,8/1,9/1,10/2,...
 // 使い方：start1.setDate(start1.getDate() + 1);//１日後
 //-----------------------------------------------------
+//Range
 //-----------------------------------------------------
 /**
  * @param  {int} begin
@@ -435,6 +449,15 @@ export function* range(begin: number, end: number, interval = 1) {
     yield i;
   }
 }
+//-----------------------------------------------------
+//配列連番の生成（範囲指定）
+//-----------------------------------------------------
+export const range2 = (
+  start: number,
+  stop: number,
+  step: number = 1,
+): number[] =>
+  Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
 //Deep Copy
 //structuredClone(value, transfer);
 //１．Deep Copy
@@ -469,8 +492,8 @@ export function deepCloneObj(obj: any): any {
 // }
 //-------------------------------------------------------------------
 // 1週間の曜日[日曜日始まり]に日付を日付[list]で返す
-// {day: 0, date: 'Sun Jun 02 2024 19:06:36 GMT+0900 (日本標準時)'}
-// getWeekDay7("2024/06/05")--->水曜日
+// [{day: 0, date: 'Sun Jun 02 2024 19:06:36 GMT+0900 (日本標準時)'},{}...,{}]
+// getWeekDay7("2024/06/05")の週の日曜日始まり7日間
 //-------------------------------------------------------------------
 export const getWeekDay7 = (
   dateString1: string = '', //本日
