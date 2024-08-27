@@ -341,37 +341,6 @@ export const getFormatDateTime = (date: Date, time: number = 0) => {
     .split('T')[time];
 };
 
-// 最大公倍数
-// 値が複数個ある場合は、argumentsを使うことで計算することが可能です
-// アロー関数は、argumentsは使用できません。
-// lcm(15,25,50) > 150
-// function calcLcm() {
-//   const g = (n: number, m: number): number => (m ? g(m, n % m) : n);
-//   const l = (n: number, m: number): number => (n * m) / g(n, m);
-//   let ans = arguments[0];
-
-//   for (let i = 1; i < arguments.length; i++) {
-//     ans = l(ans, arguments[i]);
-//   }
-//   return ans;
-// }
-//var date = new Date();
-//var copiedDate = new Date(date.getTime());
-//
-
-//------------------------------
-// "1234"->[1,2,3,4]に変換する
-//------------------------------
-export const numberStringToArray = (num: string | number): number[] => {
-  //String型に変換
-  const stringNum = String(num).replace(/[^\d]/g, ''); //数字のみ
-  const result = [];
-  for (let i = 0; i < stringNum.length; i++) {
-    result.push(parseInt(stringNum[i]));
-  }
-  return result;
-};
-
 //------------------------
 // 日付の初期化 1日
 //------------------------
@@ -428,68 +397,7 @@ export const getAddMonthDate2 = (
     : resultYear + '年' + resultMonth + '月' + resultDay + '日';
   return result;
 };
-//-------SetDate()の挙動---------------
-// setDate(0)は先月末6/15->5/31,4/30,3/31,2/29...
-// setDate(-1)は、6/15->5/30,4/29,3/30,2/28.....
-// setDate(1)は月初、(30)30.....
-// setDate(31:30+1)は6/15->7/1,7/31,7/31....
-// setDate(32:30+2)は6/15->7/2,8/1,9/1,10/2,...
-// 使い方：start1.setDate(start1.getDate() + 1);//１日後
-//-----------------------------------------------------
-//Range
-//-----------------------------------------------------
-/**
- * @param  {int} begin
- * @param  {int} end
- * @param  {int} interval=1
- */
-// for (const i of range(begin,end)) {}
-export function* range(begin: number, end: number, interval = 1) {
-  for (let i = begin; i < end; i += interval) {
-    yield i;
-  }
-}
-//-----------------------------------------------------
-//配列連番の生成（範囲指定）
-//-----------------------------------------------------
-export const range2 = (
-  start: number,
-  stop: number,
-  step: number = 1,
-): number[] =>
-  Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
-//Deep Copy
-//structuredClone(value, transfer);
-//１．Deep Copy
-// export function deepCloneObj2(originalObject) {
-//   return JSON.parse(JSON.stringify(originalObject));
-// }
-//２．Deep Copy
-export function deepCloneObj(obj: any): any {
-  if (typeof obj === 'object') {
-    if (Array.isArray(obj)) {
-      return obj.map(deepCloneObj);
-    } else {
-      const clonedObj: { [index: string]: any } = {};
-      for (const key in obj) {
-        clonedObj[key] = deepCloneObj(obj[key]);
-      }
-      return clonedObj;
-    }
-  } else {
-    return obj;
-  }
-}
-//３．Deep Copy
-// export function cloneObject(obj) {
-//   const clone = {};
-//   Object.keys(obj).forEach((key) => {
-//     obj[key] != null && typeof obj[key] === 'object'
-//       ? (clone[key] = cloneObject(obj[key]))
-//       : (clone[key] = obj[key]);
-//   });
-//   return clone;
-// }
+
 //-------------------------------------------------------------------
 // 1週間の曜日[日曜日始まり]に日付を日付[list]で返す
 // [{day: 0, date: 'Sun Jun 02 2024 19:06:36 GMT+0900 (日本標準時)'},{}...,{}]
@@ -526,42 +434,6 @@ export const getWeekDay7 = (
       };
     });
   return dayList;
-};
-
-// const obj: {
-//   name: string;
-//   age: number;
-// } = {
-//   name: 'John Doe',
-//   age: 30,
-// };
-// const keys: Array<keyof typeof obj> = Object.keys(obj);
-// const name: string = obj[keys[0]];
-//
-//
-//
-//---------------------
-//オブジェクト配列の指定されたKEYでまとめて文字列の配列を返す
-//join... Object配列[{name:"name"}{...}]をArray["name","name1"...]つなぐ
-// const array2 = calc.joinList(newDataset,"name"); //nameだけ取り出す
-//---------------------
-// type profileObj = {
-//   [x:string]:any;
-// };
-export const joinList = (newDataset: object[], tagkey: string): string[] => {
-  const dataString =
-    newDataset.length === 0
-      ? []
-      : newDataset
-          .map((data: { [index: string]: any }) => {
-            return data[tagkey];
-          })
-          .reduce((prev: string[], curr: string): string[] => {
-            return [...prev, curr]; //[...prev, curr, ' ']
-          }, []);
-  //.slice(0, -1); //最後のセパレター削除["友引"," ","芒種"]
-
-  return dataString;
 };
 //--------------------------------------
 //協定世界時のシリアル値：ExcelTimeUTC ＝ UnixTime / 86400 + 25569
@@ -665,6 +537,166 @@ export function getJapanCalendar(currentDate: Date) {
   }
   return {};
 }
+
+//var date = new Date();
+//var copiedDate = new Date(date.getTime());
+//-------SetDate()の挙動---------------
+// setDate(0)は先月末6/15->5/31,4/30,3/31,2/29...
+// setDate(-1)は、6/15->5/30,4/29,3/30,2/28.....
+// setDate(1)は月初、(30)30.....
+// setDate(31:30+1)は6/15->7/1,7/31,7/31....
+// setDate(32:30+2)は6/15->7/2,8/1,9/1,10/2,...
+// 使い方：start1.setDate(start1.getDate() + 1);//１日後
+//-----------------------------------------------------
+//********************************************************* */
+//********** 数値計算 ************************************** */
+//********************************************************* */
+// 最大公倍数(LCM)
+// 値が複数個ある場合は、argumentsを使うことで計算することが可能です
+// アロー関数は、argumentsは使用できません。
+// lcm(15,25,50) > 150
+// function calcLcm() {
+//   const g = (n: number, m: number): number => (m ? g(m, n % m) : n);
+//   const l = (n: number, m: number): number => (n * m) / g(n, m);
+//   let ans = arguments[0];
+
+//   for (let i = 1; i < arguments.length; i++) {
+//     ans = l(ans, arguments[i]);
+//   }
+//   return ans;
+// }
+//
+export const calcLcm = (...argc: number[]) => {
+  const g = (n: number, m: number): number => (m ? g(m, n % m) : n);
+  const l = (n: number, m: number): number => (n * m) / g(n, m);
+  let ans = argc[0];
+
+  for (let i = 1; i < argc.length; i++) {
+    ans = l(ans, argc[i]);
+  }
+  return ans;
+};
+// 最大公約数（GCD）を求める関数
+export const calcGcd = (a: number, b: number): number => {
+  return b === 0 ? a : calcGcd(b, a % b);
+};
+
+//------------------------------
+// "1234"->[1,2,3,4]に変換する
+//------------------------------
+export const numberStringToArray = (num: string | number): number[] => {
+  //String型に変換
+  const stringNum = String(num).replace(/[^\d]/g, ''); //数字のみ
+  const result = [];
+  for (let i = 0; i < stringNum.length; i++) {
+    result.push(parseInt(stringNum[i]));
+  }
+  return result;
+};
+//-----------------------------------------------------
+//Range
+//-----------------------------------------------------
+/**
+ * @param  {int} begin
+ * @param  {int} end
+ * @param  {int} interval=1
+ */
+// for (const i of range(begin,end)) {}
+export function* range(begin: number, end: number, interval = 1) {
+  for (let i = begin; i < end; i += interval) {
+    yield i;
+  }
+}
+//-----------------------------------------------------
+//配列連番の生成（範囲指定）
+//-----------------------------------------------------
+export const range2 = (
+  start: number,
+  stop: number,
+  step: number = 1,
+): number[] =>
+  Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
+//-----------------------------------------------------
+//Deep Copy
+//-----------------------------------------------------
+//structuredClone(value, transfer);
+//１．Deep Copy
+// export function deepCloneObj2(originalObject) {
+//   return JSON.parse(JSON.stringify(originalObject));
+// }
+//２．Deep Copy
+export function deepCloneObj(obj: any): any {
+  if (typeof obj === 'object') {
+    if (Array.isArray(obj)) {
+      return obj.map(deepCloneObj);
+    } else {
+      const clonedObj: { [index: string]: any } = {};
+      for (const key in obj) {
+        clonedObj[key] = deepCloneObj(obj[key]);
+      }
+      return clonedObj;
+    }
+  } else {
+    return obj;
+  }
+}
+//３．Deep Copy
+// export function cloneObject(obj) {
+//   const clone = {};
+//   Object.keys(obj).forEach((key) => {
+//     obj[key] != null && typeof obj[key] === 'object'
+//       ? (clone[key] = cloneObject(obj[key]))
+//       : (clone[key] = obj[key]);
+//   });
+//   return clone;
+// }
+
+// const obj: {
+//   name: string;
+//   age: number;
+// } = {
+//   name: 'John Doe',
+//   age: 30,
+// };
+// const keys: Array<keyof typeof obj> = Object.keys(obj);
+// const name: string = obj[keys[0]];
+//
+//
+//
+
+/**
+ * 任意の桁で四捨五入する関数
+ * @param {number} value 四捨五入する数値
+ * @param {number} base どの桁で四捨五入するか（10→10の位、0.1→小数第１位）
+ * @return {number} 四捨五入した値
+ */
+export const numRound = (value: number, base: number): number => {
+  return Math.round(value * base) / base;
+};
+//---------------------
+//オブジェクト配列の指定されたKEYでまとめて文字列の配列を返す
+//join... Object配列[{name:"name"}{...}]をArray["name","name1"...]つなぐ
+// const array2 = calc.joinList(newDataset,"name"); //nameだけ取り出す
+//---------------------
+// type profileObj = {
+//   [x:string]:any;
+// };
+export const joinList = (newDataset: object[], tagkey: string): string[] => {
+  const dataString =
+    newDataset.length === 0
+      ? []
+      : newDataset
+          .map((data: { [index: string]: any }) => {
+            return data[tagkey];
+          })
+          .reduce((prev: string[], curr: string): string[] => {
+            return [...prev, curr]; //[...prev, curr, ' ']
+          }, []);
+  //.slice(0, -1); //最後のセパレター削除["友引"," ","芒種"]
+
+  return dataString;
+};
+
 // holidayList = holidayList.concat(result); //配列結合
 // オブジェクト→配列 arr.find(([id, data])=>{})
 //const arr = Object.entries(obj);//id=obj.key,data={obj.data}
@@ -752,17 +784,17 @@ export const create2DimArray = (
     Array.from({ length: eleRow }).fill(fill),
   );
   //------------------------
-  // const array = new Array(0); //0行配列(array)を作成
+  //2. const array = new Array(0); //0行配列(array)を作成
   // for (let y = 0; y < element; y++) {
   //   //ｙ行配列(array)の各要素に対して、eleRow列の配列を作成し、0で初期化
   //   array[y] = new Array(eleRow).fill(fill);
   // }
   //-------------------
-  // let arr = Array(m)
+  //3. let arr = Array(m)
   //   .fill()
   //   .map(() => Array(n));
   //-----------------
-  // let a;
+  //4. let a;
   // for (a = []; a.length < 3; ) a.push(Array(5).fill(0));
   //------------------
 

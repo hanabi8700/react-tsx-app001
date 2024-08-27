@@ -9,6 +9,7 @@ import Holiday from './Holiday';
 import { EventDataGet } from './EventDataGet';
 import WeekDay from '../component/WeekDay';
 import { stockedDaysType, CalenderStack } from '~/CalenderStack';
+import { Holiday2 } from './Holiday2';
 
 // export const fetchUrlArray = () => {
 //   const url = [
@@ -53,7 +54,8 @@ const Button = (
 // 日付加減算
 //-----------------------------------------------------
 const useCounter = (initialValue = 0) => {
-  const [countx, setCount] = useState(initialValue);
+  const [countx, setCount] = useState<number>(initialValue);
+  const [uDate, setUDate] = useState<Date>(new Date());
   debug8 && console.log('ボタンuseCounter', countx);
 
   const incrementM = useCallback(() => setCount((x) => x + 1), []);
@@ -64,6 +66,7 @@ const useCounter = (initialValue = 0) => {
   const reset = useCallback(() => setCount(initialValue), [initialValue]);
   const idouBtn = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     // console.log(e.target.valueAsDate);
+    setUDate(e.target.valueAsDate ?? new Date());
 
     const dateNow = new Date();
     if (e.target.valueAsDate !== null) {
@@ -85,6 +88,7 @@ const useCounter = (initialValue = 0) => {
     decrementY,
     reset,
     idouBtn,
+    uDate,
   };
 };
 
@@ -103,6 +107,7 @@ export const Calendar = () => {
     decrementY,
     reset,
     idouBtn,
+    uDate,
   } = useCounter();
   //
   //dayOfWeeks 日月～土
@@ -222,11 +227,35 @@ export const Calendar = () => {
     calendarDates.nextDateFirstWeek as Date,
   );
   debug9 && console.log('通信データ範囲', startDateStr, endDateStr);
-
+  //////////////////////////////////////////
+  //特別記念日など取得のための通信
+  const endpointUrl2 = 'webcalhana/data/yearly366.txt'; //honban\dist\yearly366.dat
+  const dataObj2 = EventDataGet(endpointUrl2, {
+    // responseType: 'blob', //text/plane,blob
+    responseType: 'arraybuffer',
+  });
+  debug9 &&
+    console.log(
+      'dataRECV2',
+      dataObj2.iserror ? dataObj2.iserror : dataObj2.data, //config.url//code
+      dataObj2.iserror ? dataObj2.iserror.message : '',
+    );
+  function decodeShiftJis(data: ArrayBuffer): string {
+    return new TextDecoder('shift-jis').decode(data);
+  }
+  if (dataObj2.data) {
+    //特別記念日など取得
+    const specialHolidayTxt = decodeShiftJis(dataObj2.data);
+    // console.log('specialHoliday', specialHoliday);
+    const result4: holidayList[] = Holiday2(specialHolidayTxt);
+    // holidayList = holidayList.concat(result4); //配列結合シャローコピー
+  }
+  ///////////////////////////////////////////////
   //------------------------
   // 通信
   //------------------------
-  const dataObj = EventDataGet(endpointUrl, startDateStr, endDateStr);
+  const url = `${endpointUrl}?start=${startDateStr}&end=${endDateStr}`;
+  const dataObj = EventDataGet(url, {});
   // const dataObj2 = useCallback(
   //   (dataObj = EventDataGet(endpointUrl, startDateStr, endDateStr)),
   //   [startDateStr, endDateStr],
@@ -236,7 +265,7 @@ export const Calendar = () => {
   debug9 &&
     console.log(
       'dataRECV',
-      dataObj.iserror ? dataObj.iserror.config.url : dataObj.data,
+      dataObj.iserror ? dataObj.iserror : dataObj.data, //config.url//code
       dataObj.iserror ? dataObj.iserror.message : '',
     );
   debug9 && console.log('Calendar-render');
@@ -288,7 +317,7 @@ export const Calendar = () => {
               type="date"
               name="birth"
               onChange={idouBtn}
-              value={calc.getFormatDateTime(new Date(calendarDate))}
+              value={calc.getFormatDateTime(uDate)}
             />
             {/* {Button(idouBtn, '移動', 'bt_idou')} */}
             {/* <button className="btn3" type="button">移動</button> */}
