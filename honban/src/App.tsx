@@ -49,9 +49,6 @@ const router = createBrowserRouter([
           </div>
         ),
       },
-      // { path: 'useref', element: <UserefTest /> },
-      // { path: 'configdata', element: <ConfigDataGet /> },
-      // { path: 'Dispatch', element: <Dispatch /> },
     ],
   },
 ]);

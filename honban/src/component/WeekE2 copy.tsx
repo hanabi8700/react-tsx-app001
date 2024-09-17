@@ -1,5 +1,5 @@
 import * as calc from '~/CalenderLib';
-import { holidayList } from '../pages/Rokuyo';
+import { HolidayList } from '../pages/Rokuyo';
 // import { useState } from 'react';
 
 export interface EventType {
@@ -33,7 +33,7 @@ export const WeekEvent3 = (
     inMonth: number;
   }[],
   dataEvent: EventType[],
-  dataHoliday: holidayList[],
+  dataHoliday: HolidayList[],
   // stockedDays: stockedDaysType[],
 ) => {
   debug9 && console.log('WeekEvent', weekdayArray[0]);
@@ -88,7 +88,7 @@ const weekEvent = (
   ctDate: string,
   weeksNum: number,
   dataEvent: EventType[],
-  dataHoliday: holidayList[],
+  dataHoliday: HolidayList[],
   count = 1, //行数
 ) => {
   // let stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
@@ -156,7 +156,7 @@ type Props = {
   calendarDates: string;
   weekNumber: number;
   dataEvent: [];
-  dataHoliday: holidayList[];
+  dataHoliday: HolidayList[];
   rowMax: number;
 };
 //-----------------------------------------------------

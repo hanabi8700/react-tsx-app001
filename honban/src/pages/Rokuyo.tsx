@@ -4,7 +4,7 @@ import Qreki from '~/Qreki';
 // import hanalibC01 from '~/hanalibC01.js';
 // const hanaFunc = new hanalibC01();
 //
-export interface holidayList {
+export interface HolidayList {
   date: string;
   name: string;
   holiday: boolean;
@@ -24,7 +24,7 @@ function Rokuyo(betweenArray: Date[]) {
   const result = betweenArray.map((date) => {
     const dateQreki = Qreki(date); //date5.getJD()
     const date1 = calc.getDateWithString(date);
-    const obj: holidayList = {
+    const obj: HolidayList = {
       date: date1,
       name: dateQreki.rokuyo + dateQreki.sekki24[0], //六曜２４節気取得,
       holiday: (dateQreki.sekki24[1] as number) % 12 === 0 ? true : false,

@@ -8,12 +8,12 @@ import fetchers from './Fetchers';
 // データの事前読み込み（当然キャッシュに保存される）
 // plelaod('https://jsonplaceholder.typicode.com/users/1', fetcher);
 // 'https://jsonplaceholder.typicode.com/users/1',
-const debug9 = true;
+const debug9 = false;
 
 export const EventDataGet = (
   // method: string,
   endpointUrl: string,
-  option: { [x: string]:any },
+  option: { [x: string]: any },
   // startTime: string,
   // endTime: string,
 ) => {
@@ -27,22 +27,24 @@ export const EventDataGet = (
     [endpointUrl, option],
     ([url, option]) => fetchers(url, option),
     {
-      shouldRetryOnError: true,
+      //shouldRetryOnError: false を指定する事により再試行を無効にすることが可能です。
+      // shouldRetryOnError: true,
       dedupingInterval: 60 * 1000, //重複したリクエストを排除する
-      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        // 404では再試行しない。
-        debug9 && console.log(error, retryCount); //
-        if (error.response.status === 404) return;
+      // onErrorRetry: (error, revalidate, { retryCount }) => {
+      //   //onErrorRetry: (error, revalidate, retryCount:number ) => {
+      //   // 404では再試行しない。
+      //   debug9 && console.log(error, retryCount); //
+      //   if (error.response.status === 404) return;
 
-        // 特定のキーでは再試行しない。
-        // if (key === '/api/user') return;
+      //   // 特定のキーでは再試行しない。
+      //   // if (key === '/api/user') return;
 
-        // 再試行は10回までしかできません。
-        if (retryCount >= 10) return;
+      //   // 再試行は10回までしかできません。
+      //   if (retryCount >= 10) return;
 
-        // 5秒後に再試行します。
-        setTimeout(() => revalidate({ retryCount }), 5000);
-      },
+      //   // 5秒後に再試行します。
+      //   setTimeout(() => revalidate({ retryCount: retryCount + 1 }), 5000);
+      // },
     },
   );
   //null:使いません。2：明示的に何個インデントが指定されている

@@ -3,7 +3,7 @@ import * as calc from '~/CalenderLib';
 import { MouseEventHandler, useCallback, useMemo, useState } from 'react';
 // import * as calc from '../../../public/CalenderLib';
 import './Calendar.css';
-import Rokuyo, { holidayList } from './Rokuyo';
+import Rokuyo, { HolidayList } from './Rokuyo';
 
 import Holiday from './Holiday';
 import { EventDataGet } from './EventDataGet';
@@ -95,7 +95,7 @@ const useCounter = (initialValue = 0) => {
 //-----------------------------------------------------
 // カレンダー本体
 //-----------------------------------------------------
-const debug8 = false;
+const debug8 = true;
 const debug9 = false;
 export const Calendar = () => {
   debug9 && console.log('Calendar');
@@ -114,21 +114,22 @@ export const Calendar = () => {
   const weekDays = calc.getWeekday() as string[];
 
   const date5 = new Date();
-  const calendarDate = calc.getDateWithString(
+  const calendarDateStr = calc.getDateWithString(
     calc.getAddMonthDate2(calc.getDateWithString(date5), countx, true) as Date,
   );
-  debug9 && console.log('カレンダー', calendarDate);
+  debug9 && console.log('カレンダー', calendarDateStr);
 
   //--------------------------------------------------------
   // date.toLocaleDateString(); // 2020/5/13
   //--------------------------------------------------------
-  const calendarDates = calc.CalenderLib(calendarDate);
+  const calendarDates = calc.CalenderLib(calendarDateStr);
   const ddYear = calendarDates.currentYear;
   const ddMonth = calendarDates.currentMonth;
   const ddWareki = calc.JapaneseCalendar(calendarDates.firstDate);
 
+  debug9 && console.log('calendarDates:', calendarDates);
   // index 0:きょう  1~n:祝日、六曜
-  let holidayList: holidayList[] = [
+  let holidayArray: HolidayList[] = [
     {
       date: calc.getDateWithString(calendarDates.today),
       name: 'today',
@@ -139,27 +140,9 @@ export const Calendar = () => {
       backgroundColor: 'None',
     },
     {
-      date: '2024/08/06',
-      name: '国民の祝日',
-      holiday: true,
-      order: 111,
-      type: 'holiday',
-      option: 0,
-      backgroundColor: 'None',
-    },
-    {
-      date: '2024/08/07',
-      name: '振替休日',
-      holiday: true,
-      order: 115,
-      type: 'holiday',
-      option: 0,
-      backgroundColor: 'None',
-    },
-    {
       date: '2024/08/13',
-      name: '祝日14',
-      holiday: true,
+      name: '継続14',
+      holiday: false,
       order: 1101,
       type: 'holiday',
       option: 0,
@@ -168,8 +151,8 @@ export const Calendar = () => {
     },
     {
       date: '2024/08/15',
-      name: '祝日2',
-      holiday: true,
+      name: '継続2',
+      holiday: false,
       order: 1101,
       type: 'holiday',
       option: 0,
@@ -178,8 +161,8 @@ export const Calendar = () => {
     },
     {
       date: '2024/08/16',
-      name: '祝日4',
-      holiday: true,
+      name: '継続4',
+      holiday: false,
       order: 1101,
       type: 'holiday',
       option: 0,
@@ -195,11 +178,13 @@ export const Calendar = () => {
     calendarDates.prevDateLastWeek as Date, //月初め１日前の日曜日から５５日
     //calendarDates.lastDate+2週目の土曜日までをDate配列で
     calc.getSpecificDayDate(
-      6, //土曜日
-      2, //2週目0,1,2
+      6, //土曜日まで
+      7, //第７
       calc.getDateWithString(calendarDates.lastDate),
     ),
   );
+  // カレンダー表示最終日
+  const lastDateDay = betweenArray[betweenArray.length - 1];
   // debug9 && console.log('表示カレンダー全日付', betweenArray);
 
   //--------------------------------------
@@ -207,29 +192,30 @@ export const Calendar = () => {
   //--------------------------------------
   const result2 = Rokuyo(betweenArray); //六曜
   const result3 = Holiday(result2); //土用の丑の日(ID:31)
-  holidayList = holidayList.concat(result2, result3); //配列結合シャローコピー
-  calc.dateSort(holidayList, ['date', 'order']);
-  for (const element of holidayList) {
+  holidayArray = holidayArray.concat(result2, result3); //配列結合シャローコピー
+  //calc.dateSort(holidayArray, ['date', 'order']);
+  for (const element of holidayArray) {
     //ID設定
     element.id = numRandom();
   }
   //------------------------
   //通信データー取得範囲
-  // console.log(holidayList);
+  // console.log(holidayArray);
   // const endpointUrl = 'hanaflask/index.cgi/hanacalen/holiday';
   //------------------------
   const endpointUrl = 'webcalhana/hanafullcal.py';
 
-  const startDateStr = calc.getFormatDateTime(
+  const startDateStr = calc.getFormatDateTimeStr(
     calendarDates.prevDateLastWeek as Date,
   );
-  const endDateStr = calc.getFormatDateTime(
-    calendarDates.nextDateFirstWeek as Date,
+  const endDateStr = calc.getFormatDateTimeStr(
+    lastDateDay, // カレンダー表示最終日
+    // calendarDates.nextDateFirstWeek as Date,
   );
   debug9 && console.log('通信データ範囲', startDateStr, endDateStr);
   //////////////////////////////////////////
   //特別記念日など取得のための通信
-  const endpointUrl2 = 'webcalhana/data/yearly366.txt'; //honban\dist\yearly366.dat
+  const endpointUrl2 = 'webcalhana/data/yearly365.txt'; //honban\dist\yearly366.dat
   const dataObj2 = EventDataGet(endpointUrl2, {
     // responseType: 'blob', //text/plane,blob
     responseType: 'arraybuffer',
@@ -237,18 +223,31 @@ export const Calendar = () => {
   debug9 &&
     console.log(
       'dataRECV2',
+      dataObj2.iserror,
       dataObj2.iserror ? dataObj2.iserror : dataObj2.data, //config.url//code
       dataObj2.iserror ? dataObj2.iserror.message : '',
     );
+  //------------------------------------------
+  //arrayBuffer(ShiftJis)-->decode-->UTF8へ変換関数
+  //------------------------------------------
   function decodeShiftJis(data: ArrayBuffer): string {
     return new TextDecoder('shift-jis').decode(data);
   }
+  //********** */
+  //通信OK？
+  //********** */
   if (dataObj2.data) {
     //特別記念日など取得
     const specialHolidayTxt = decodeShiftJis(dataObj2.data);
-    // console.log('specialHoliday', specialHoliday);
-    const result4: holidayList[] = Holiday2(specialHolidayTxt);
-    // holidayList = holidayList.concat(result4); //配列結合シャローコピー
+    console.log('specialHoliday', specialHolidayTxt);
+    const result4: HolidayList[] = Holiday2(specialHolidayTxt, calendarDateStr);
+    holidayArray = holidayArray.concat(result4); //配列結合シャローコピー
+    for (const element of holidayArray) {
+      element.id = numRandom(); //ID設定
+      //element.order = element.order ? element.order : 1101;
+      //element.date = calc.getDateWithString(new Date(element.start as string));
+    }
+    calc.dateSort(holidayArray, ['date', 'order']);
   }
   ///////////////////////////////////////////////
   //------------------------
@@ -269,8 +268,11 @@ export const Calendar = () => {
       dataObj.iserror ? dataObj.iserror.message : '',
     );
   debug9 && console.log('Calendar-render');
-  stockedDays = CalenderStack(holidayList, stockedDays, true, true); //初期化伴う
+  stockedDays = CalenderStack(holidayArray, stockedDays, true, true); //初期化伴う
 
+  //********** */
+  //通信OK？
+  //********** */
   let dataEvent = [];
   if (dataObj.data) {
     //ダウンロードしたデーター
@@ -283,19 +285,22 @@ export const Calendar = () => {
     }
     //test項目
     dataEvent.push({
+      title: 'testTEST',
       id: numRandom(),
       order: 1109,
-      date: '2024/08/14',
+      date: '2024/09/14',
       duration: 2,
-      title: 'testTEST',
       backgroundColor: 'orange',
-      start: '2024-08-14T00:00:00+09:00',
+      start: '2024-09-14T00:00:00+09:00',
     });
     stockedDays = CalenderStack(dataEvent, stockedDays); //並び替え
   }
   //該当クリック日付枠のイベントを検索
   calc.dateSort(stockedDays, ['date']);
-  debug8 && console.log('Calendar-stockedDays:', stockedDays, dataEvent);
+  debug8 && console.log('Calendar-stockedDays:', stockedDays);
+  debug8 && console.log('Calendar-holidayArray:', holidayArray);
+  debug8 && console.log('Calendar-dataEvent:', dataEvent);
+
   // -----------------------------Display-Calendar-------------------------------------
   return (
     <>
@@ -317,7 +322,7 @@ export const Calendar = () => {
               type="date"
               name="birth"
               onChange={idouBtn}
-              value={calc.getFormatDateTime(uDate)}
+              value={calc.getFormatDateTimeStr(uDate)}
             />
             {/* {Button(idouBtn, '移動', 'bt_idou')} */}
             {/* <button className="btn3" type="button">移動</button> */}
@@ -347,9 +352,9 @@ export const Calendar = () => {
                   // <>
                   <WeekDay
                     key={index}
-                    ctDate={calendarDates.firstDateStr as string}
+                    ctDate={calendarDates.firstDateStr as string} //月始(1day)
                     weeksNum={index}
-                    holidayList={holidayList}
+                    holidayArray={holidayArray}
                     dataEvent={dataEvent}
                     stockedDays={stockedDays}
                   ></WeekDay>

@@ -1,10 +1,10 @@
 import * as calc from '~/CalenderLib';
-import { holidayList } from '../pages/Rokuyo';
+import { HolidayList } from '../pages/Rokuyo';
 
 interface Props {
   ctDate: string;
   weeksNum: number;
-  dataset: holidayList[];
+  dataset: HolidayList[];
 }
 
 //-----------------------------------------------------
@@ -31,7 +31,7 @@ export default function WeekDayFg({ ctDate, weeksNum, dataset }: Props) {
     //--------------------------------------
     newDataset = dataset.filter((data) => {
       return data.date === d.date && data.holiday && data.order >= 999;
-      //祝日 dataset 1Day
+      //祝日 dataset 1Day (order:=>999)
     });
     const array2 = calc.joinList(newDataset, 'name'); //nameだけ取り出す
     const newArray = array1.concat(array2); //結合

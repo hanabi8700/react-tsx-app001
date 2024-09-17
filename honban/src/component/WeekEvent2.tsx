@@ -1,5 +1,5 @@
 import * as calc from '~/CalenderLib';
-import { holidayList } from '../pages/Rokuyo';
+import { HolidayList } from '../pages/Rokuyo';
 import { stockedDaysType } from '~/CalenderStack';
 // import { useState } from 'react';
 
@@ -19,7 +19,7 @@ interface EventType2 extends EventType {
   name?: string;
   date?: string;
 }
-interface holidayList2 extends holidayList {
+interface HolidayList2 extends HolidayList {
   title?: string;
 }
 const debug9 = false;
@@ -62,11 +62,12 @@ export const WeekEvent3 = (
   return [oneWeekData, oneWeekDataStack];
 };
 //-----------------------------------------------------
+// 1週間のイベント表示 一行分
+//-------------------------
 // ctDate:"日付",weeksNum:週番号,dataEvent:イベントオブジェクト配列
 // dataHoliday:休日オブジェクト配列,
 // stockedDays:ひと月のオブジェクト配列[{}...{}]
-// 1週間のイベント表示 一行分
-// イベント５行分を画面に表示
+// イベント５行分（count）を画面に表示
 //----------------------------------------------------
 //
 // const stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
@@ -74,7 +75,7 @@ const weekEvent = (
   ctDate: string, //カレンダー月のはじめ
   weeksNum: number,
   dataEvent: EventType2[],
-  dataHoliday: holidayList2[],
+  dataHoliday: HolidayList2[],
   stockedDays: stockedDaysType[],
   count = 1, //行数
 ) => {
@@ -107,9 +108,9 @@ const weekEvent = (
       // debug9 && console.log('index:', weekdayArray[index].date, aa3);
       return aa3;
     });
-    const aa1: (EventType2 | holidayList2)[] = calc.deepCloneObj(aa);
+    const aa1: (EventType2 | HolidayList2)[] = calc.deepCloneObj(aa);
     //------------------------------------------------------------------
-    //週間[横枠]ごとにした、Undefinedにも表示するように変換する
+    //週間[横枠]ごとにしたデーターに色を付けるUndefinedにも表示するように変換する
     const bb = aa1.map((d, index) => {
       if (d && d.backgroundColor === 'None') {
         d.backgroundColor = 'rgba(0, 0, 128, 0.3)';
@@ -130,7 +131,7 @@ const weekEvent = (
       }
 
       if (index === 0 && d.date && d.date !== weekdayArray[index].date) {
-        //日曜日処理
+        //日曜日で先週からの継続を処理
         const dayCount = calc.getDateDiff(d.date, weekdayArray[index].date);
         d.duration = aduration - dayCount < 7 ? aduration - dayCount : 7;
         return d;
@@ -147,7 +148,7 @@ const weekEvent = (
     //週間[横枠]ごとにしたらHTMLマークアップ言語に変換する
     for (let i = 0; i < bb.length; i++) {
       if (bb[i] !== undefined) {
-        const d = bb[i] as EventType2 | holidayList2;
+        const d = bb[i] as EventType2 | HolidayList2;
         d.duration = d.duration ? d.duration : 1;
         const title = d.title ? d.title : d.name;
         const lengthOut = 'calc(' + (100 / 7) * d.duration + '%)';
@@ -181,7 +182,7 @@ type Props = {
   ctDate: string; //カレンダー月のはじめ
   weekNumber: number; //カレンダー週番号
   dataEvent: [];
-  dataHoliday: holidayList2[];
+  dataHoliday: HolidayList2[];
   stockedDays: stockedDaysType[]; //並び
   rowMax: number;
 };

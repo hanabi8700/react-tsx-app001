@@ -1,5 +1,5 @@
 // import * as calc from '~/CalenderLib';
-import { holidayList } from '../pages/Rokuyo';
+import { HolidayList } from '../pages/Rokuyo';
 import WeekEvent2 from './WeekEvent2';
 import WeekDayFg from './WeekDayFg';
 import WeekDayBg from './WeekDayBg';
@@ -9,21 +9,24 @@ interface Props {
   ctDate: string;
   weeksNum: number;
   dataEvent: [];
-  holidayList: holidayList[];
+  holidayArray: HolidayList[];
   stockedDays: stockedDaysType[];
 }
 //-----------------------------------------------------
 //1週間のカレンダー表示
 //ctDate,カレンダーの日曜日から始まる日付
 //weekNumber,カレンダーの週間番号（0,1,...7）
-//holidayList,六曜、祝祭日のデーター
+//holidayArray,六曜、祝祭日のデーター
 //dataEvent,ダウンロードしたデーター
+//-----------------------------------------------------
+////六曜（ろくよう、りくよう）dataset 1Day  (order:10=>29)
+////祝日 dataset 1Day (order:=>999)
 //-----------------------------------------------------
 export default function WeekDay({
   ctDate,
   weeksNum,
   dataEvent,
-  holidayList,
+  holidayArray,
   stockedDays,
 }: Props) {
   return (
@@ -33,7 +36,7 @@ export default function WeekDay({
         <WeekDayBg
           ctDate={ctDate}
           weeksNum={weeksNum}
-          dataset={holidayList} //土日祝背景色
+          dataset={holidayArray} //土日祝背景色つける
         ></WeekDayBg>
       </div>
       <div className="ht-row-container possec2">
@@ -41,14 +44,14 @@ export default function WeekDay({
         <WeekDayFg
           ctDate={ctDate}
           weeksNum={weeksNum}
-          dataset={holidayList} //六曜、24節気
+          dataset={holidayArray} //六曜、24節気文字つける
         ></WeekDayFg>
         {/* イベント行 */}
         <WeekEvent2
           ctDate={ctDate}
           weekNumber={weeksNum}
           dataEvent={dataEvent} //イベントデーター
-          dataHoliday={holidayList} //祝祭日
+          dataHoliday={holidayArray} //祝祭日
           stockedDays={stockedDays} //枠内並び
           rowMax={5}
         ></WeekEvent2>

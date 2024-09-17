@@ -23,13 +23,13 @@ export interface ObjectLiteralLike0 {
   currentYear: number; //指定の日付の年
   firstDate: Date; //月始めのDate
   lastDate: Date; //月末のDate
-  firstDateStr?: string; //月初String
+  firstDateStr?: string; //月初String1day
   lastDayIndex?: number; //月末の曜日GetDay
   lastDayDate?: number; //月末の日にちGetDate
   prevLastDate?: Date; //先月末日のDate
   prevLastDayDate?: number; //先月末日の日にちGetDate
-  prevDateLastWeek?: Date; //月初の週の日曜日
-  nextDateFirstWeek?: Date; //date月末の週の土曜日
+  prevDateLastWeek?: Date; //date月初の週の日曜日の日付
+  nextDateFirstWeek?: Date; //date月末の週の土曜日の日付
   // [x: string]: string | number | Date;
 }
 export type EventType = {
@@ -172,6 +172,9 @@ export const getWeekday = (
 };
 //-----------------------------------------------------
 //春分の日3月、秋分の日9月を求める １９８０年以降 配列で返す
+// 1979年までは、春分の日は 1960, 1968, 1972, 1976年が3月20日、他は3月21日になります。
+// また、秋分の日は 1951, 1955, 1959, 1963, 1967, 1971, 1975, 1979年が9月24日、
+// 他は9月23日になります。
 //-----------------------------------------------------
 export const sprinAutomDay = (year: number = 2024) => {
   const day1Syubun9 = Math.floor(
@@ -180,15 +183,72 @@ export const sprinAutomDay = (year: number = 2024) => {
   const day2Synbun3 = Math.floor(
     20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4),
   );
-  const ap = Array.from([day2Synbun3, day1Syubun9]);
+  const sup20 = [1960, 1968, 1972, 1976];
+  // const sup21 = [];
+  const atm24 = [1951, 1955, 1959, 1963, 1967, 1971, 1975, 1979];
+  // const atm23 = [];
+  const springDay = sup20.indexOf(year) > -1 ? 20 : 21;
+  const autumnDay = atm24.indexOf(year) > -1 ? 24 : 23;
+  const ap =
+    year >= 1980
+      ? Array.from([day2Synbun3, day1Syubun9])
+      : year >= 1950
+        ? [springDay, autumnDay]
+        : [0, 0];
   return ap;
 };
+
 //------------------------------------------------------------
 // 年月の指定した曜日の日付を取得する関数
-// 来週の金曜日の日付を取得する場合は、
-// 第一引数に5（金曜日）、第二引数に1（1週間後）を指定します
+// 1月第2月曜日の日付を取得する場合は、
+// 第一引数に1（月曜日）、第二引数に2（第2）を指定します[第2月曜日]
+// const res1 = getSpecificDayDate(1, 2, '2024/01/01');
+// console.log(res1.toLocaleDateString())  //2024/01/8
 //------------------------------------------------------------
 export const getSpecificDayDate = (
+  tDay: number, //祝日の曜日コード
+  sWeek: number = 1, //週番号
+  dateString1: string = '',
+) => {
+  const date1 = stringToDate(dateString1);
+  date1.setDate(1); //1日
+  const day1 = date1.getDay(); //1日の曜日
+  //1月第2月曜日=(祝日の週番号)*7 + (7+祝日の曜日コード - 月初の曜日コード) % 7 - 6
+  const dd = sWeek * 7 + ((7 + tDay - day1) % 7) - 6;
+  const sDate = new Date(date1.getFullYear(), date1.getMonth(), dd);
+  return sDate;
+};
+
+export const getSpecificDayDate2 = (
+  tDay: number,
+  sWeek: number = 1,
+  dateString1: string = '',
+) => {
+  const date2 = stringToDate(dateString1);
+  const date1 = stringToDate(dateString1);
+  date1.setDate(1); //1日
+  const day1 = date1.getDay(); //1日の曜日
+  // console.log(date1.toLocaleDateString(), day1);
+  tDay %= 7;
+  const a2 = 7 - (day1 - tDay); //指定曜日<月初め曜日
+  const a3 = tDay - day1; //月初め曜日<指定曜日
+  const a0 = tDay === day1 ? 0 : tDay < day1 ? a2 : a3; //月初め曜日==指定曜日
+  date2.setDate(1 + a0);
+  const firstWeekDate = date2.getDate(); //月初め指定曜日の日にち
+  const sDate = new Date(
+    date1.getFullYear(),
+    date1.getMonth(),
+    firstWeekDate + 7 * (sWeek - 1),
+  );
+  // console.log(firstWeekDate, 'day', a0, day1, tDay, sDate.toLocaleDateString());
+  return sDate;
+};
+//// 年月の指定した曜日の日付を取得する関数
+// 来週の金曜日の日付を取得する場合は、(今週:0)
+// 第一引数に1（月曜日）、第二引数に2（第2週）を指定します[第2週月曜日]
+// const res1 = getSpecificDayDate(1, 2, '2024/10/1');
+// console.log(res1.toLocaleDateString())  //2024/10/14
+export const getSpecificDayDate3 = (
   targetDay: number,
   offsetWeek: number = 0,
   dateString1: string = '',
@@ -203,12 +263,12 @@ export const getSpecificDayDate = (
 
 //---------------------------------------------------------------
 // 2つの日付(new Date)の間にある全ての日付を配列として取得しています。
-// 返値：[“2023-09-01”, ...]
+// 返値：[“2023-09-01”, ...endDate]
 //---------------------------------------------------------------
 export const getDatesBetween = (startDate: Date, endDate: Date): Date[] => {
   const dates: Date[] = [];
   // const currentDate = new Date(startDate);
-  const currentDate = stringToDate(getFormatDateTime(startDate));
+  const currentDate = stringToDate(getDateWithString(startDate));
   while (currentDate <= endDate) {
     dates.push(new Date(currentDate));
     currentDate.setDate(currentDate.getDate() + 1);
@@ -233,7 +293,7 @@ export const getWeekIndex = (date: Date): number => {
 // 初日は含まない   dateFlag=false : 年齢, (default)true: 日数
 //-----------------------------------------------------------
 export const getDateDiff = (
-  dateString1: string,
+  dateString1: string, //base
   dateString2: string,
   dateFlag: boolean = true,
 ) => {
@@ -298,23 +358,88 @@ export const getDateWithString = (dateString1: Date, dd: boolean = true) => {
 //   const result = year + '/' + month + '/' + day;
 //   return result;
 // };
-
+//-----------------------------------------------------
+//数値を固定長文字列へ変換(0埋める) (243,6)->"000243"
+//"%0*d" width num
+//-----------------------------------------------------
+export const leftFillNum = (num: number, targetLength: number): string => {
+  return num.toString().padStart(targetLength, '0');
+};
+//-----------------------------------------------------
+//数値を固定長(切り抜き)文字列へ変換(0埋める) (24302,2)->"02"
+//-----------------------------------------------------
+export const SliceNum = (num: number, targetLength: number): string => {
+  return num
+    .toString()
+    .padStart(targetLength, '0')
+    .slice(targetLength * -1);
+};
+//-----------------------------------------------------
+//数値を固定長(切り抜き)文字列へ変換(*埋める) (24302,2)->"***02"
+//-----------------------------------------------------
+export const Slice3Num = (
+  num: number,
+  targetLength: number,
+  charact = '*',
+): string => {
+  const len = String(num).length;
+  return num
+    .toString()
+    .slice(targetLength * -1)
+    .padStart(len, charact);
+};
 //---------------------------------
 // 2024年06月21日->20240621->Date()
 // 省略：今日、最低４桁必要だとgetNumDate(2024)
 //---------------------------------
-export const get8NumToDate = (dateString: string | number = '') => {
-  let dateString2 = String(dateString).replace(/[^\d]/g, ''); //数字のみ
-  if (dateString2.length < 4 && dateString2 !== '')
-    dateString2 = ('0000' + dateString2).slice(-4);
-  const dt =
-    dateString2.slice(0, 4) +
-    '/' +
-    dateString2.slice(4, 6) +
-    '/' +
-    dateString2.slice(6);
-  return dateString ? new Date(dt) : new Date();
+export const get8NumToDate = (dateString: string | number) => {
+  const dateString2 = String(dateString).replace(/[^\d]/g, ''); //数字のみ
+  const dl = dateString2.length;
+  let a, b, c, c1, b1;
+  if (dl === 4) {
+    a = Number(dateString2.slice(0, 4));
+    b = 1;
+    c = 0;
+    b1 = 1;
+    c1 = 1;
+  } else if (dl > 4 && dl <= 6) {
+    a = Number(dateString2.slice(0, 4));
+    b = Number(dateString2.slice(4, 6));
+    c = Number(dateString2.slice(6));
+    b1 = 1;
+    c1 = 1;
+  } else if (dl > 6) {
+    a = Number(dateString2.slice(0, 4));
+    b = Number(dateString2.slice(4, 6));
+    c = Number(dateString2.slice(6));
+    b1 = 1;
+    c1 = 0;
+  } else {
+    a = new Date().getFullYear();
+    b = Number(dateString2.slice(-2));
+    c = 0;
+    b1 = 1;
+    c1 = 1;
+  }
+  const dt = new Date(a, b - b1, c + c1, 0, 0, 0);
+  // console.log(dl, a, b, c, dt);
+  return dt;
 };
+// export const get8NumToDate = (dateString: string | number = '') => {
+//   let dateString2 = String(dateString).replace(/[^\d]/g, ''); //数字のみ
+//   dateString2 =
+//     Number(dateString2) > 12 && Number(dateString2) < 40 ? `0` : dateString2;
+
+//   if (dateString2.length < 4 && dateString2 !== '')
+//     dateString2 = ('0000' + dateString2).slice(-4);
+//   const dt =
+//     dateString2.slice(0, 4) +
+//     '/' +
+//     dateString2.slice(4, 6) +
+//     '/' +
+//     dateString2.slice(6);
+//   return dateString ? new Date(dt) : new Date();
+// };
 
 //-----------------------------------------------
 // 二つ年（2000,2024）の間にあるうるう年の回数を返す
@@ -330,24 +455,26 @@ export const countLeapYear = (fromYear: number, toYear: number = fromYear) => {
 
 //----------------------------------------------------------
 // Dateオブジェクトを「YYYY-MM-DD」に整形する
-// ISO: 2022-05-04T15:00:00.000Z <- 協定世界時で出力ので
-// OFFSET -540分*60000 で予めずらす と00:00:00になる
-// new Date('2024.7.21 13:00:04')Zを削除 return 13:00:04.000Z
-// const value = calc.getFormatDateTime(new Date("2024/08/22"))-->"2024-08-22"
+// ISO: 2024-09-15T15:00:00.000Z <- 協定世界時で出力なので
+// -------//OFFSET -540分*60000 で予めずらす と00:00:00になる
+// getFormatDateTimeStr(new Date("2024/9/16 0:00"))---> "2024-09-15"
 //----------------------------------------------------------
-export const getFormatDateTime = (date: Date, time: number = 0) => {
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+export const getFormatDateTimeStr = (date: Date, time: number = 0) => {
+  return new Date(date.getTime()) //- date.getTimezoneOffset() * 60000)
     .toISOString()
     .split('T')[time];
 };
 
 //------------------------
 // 日付の初期化 1日
+// initDate("2024-5-6").toLocaleString() //'2024/5/1 0:00:00'
+// initDate("2024-5-6",1,22).toLocaleString()//'2024/5/1 22:00:00'
 //------------------------
-export const initDate = () => {
-  const date = new Date();
-  date.setDate(1);
-  return date;
+export const initDate = (dateString1 = '', day = 1, hour = 0, minute = 0) => {
+  const dt = '' !== dateString1 ? new Date(dateString1) : new Date();
+  dt.setDate(day); //日付の月の日を設定します
+  dt.setHours(hour, minute, 0); //日付の時間を設定します。
+  return dt;
 };
 
 //----------------------------------------------------------
@@ -382,7 +509,7 @@ export const getAddMonthDate2 = (
   // }
   day3 = day3 > endOfMonth ? endOfMonth : monthTerm >= 0 ? day3 - 1 : day3 + 1;
 
-  const newDate = initDate(); //1日
+  const newDate = initDate(); //本月1日
 
   newDate.setFullYear(year3);
   newDate.setMonth(month3 + monthTerm - 1);
@@ -435,6 +562,28 @@ export const getWeekDay7 = (
     });
   return dayList;
 };
+//------------------------------------------
+//回数月or始まり年月
+//getNamYearMonth("2024/47")//[ 0, 2024, 11 ]
+//const [num9, year9, month] = CallLib.getNamYearMonth(cCounts);
+//[31, 1006]  or [22, 200910]
+//num9=10,year9=0,month=6  or  num9=0,year9=2009,month=10
+//------------------------------------------
+export const getNamYearMonth = (cCounts: number | string = 1) => {
+  let num9 = Number(String(cCounts).replace(/[^\d]/g, '')); //数字のみ
+  let year9 = 0;
+  //----------------------------
+  let month = (num9 % 100) % 12; //月
+  month = month == 0 ? 12 : month;
+  num9 = parseInt(String(num9 / 100)); //回数or始まり年
+  num9 >= 100
+    ? ((year9 = num9), (num9 = 0))
+    : (num9 = num9 % 100 == 0 ? 1 : num9 % 100);
+  //[31, 1006]  or [22, 200910]
+  //num9=10,year9=0,month=6  or  num9=0,year9=2009,month=10
+  return [num9, year9, month];
+};
+
 //--------------------------------------
 //協定世界時のシリアル値：ExcelTimeUTC ＝ UnixTime / 86400 + 25569
 //日本標準時のシリアル値：ExcelTimeJST ＝ (UnixTime + 32400) / 86400 + 25569
@@ -587,7 +736,7 @@ export const calcGcd = (a: number, b: number): number => {
 export const numberStringToArray = (num: string | number): number[] => {
   //String型に変換
   const stringNum = String(num).replace(/[^\d]/g, ''); //数字のみ
-  const result = [];
+  const result: number[] = [];
   for (let i = 0; i < stringNum.length; i++) {
     result.push(parseInt(stringNum[i]));
   }
@@ -609,6 +758,7 @@ export function* range(begin: number, end: number, interval = 1) {
 }
 //-----------------------------------------------------
 //配列連番の生成（範囲指定）
+// const List2 = calc.range2(10, 26).map(String);
 //-----------------------------------------------------
 export const range2 = (
   start: number,
@@ -616,6 +766,25 @@ export const range2 = (
   step: number = 1,
 ): number[] =>
   Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
+
+//-----------------------------------------------------
+// 文字列形式で取得するので改行文字で区切ってオブジェクト配列に変換
+//-----------------------------------------------------
+export const stringToObjectArray = (lineText: string) => {
+  const kugiri = /\r?\n/;
+  const lineList = lineText.split(kugiri, -1); //データを配列に
+  const keyList = range2(10, 26);
+  const resultObj = lineList
+    // .filter((data, index) => data[index] !== 0) // 2行目以降がデータのため
+    .map((line: string) => {
+      const valueList = line.split(',');
+      const tmpObj: { [x: string]: string } = {};
+      keyList.map((key, index) => (tmpObj[key] = valueList[index]));
+      return tmpObj;
+    });
+  return resultObj;
+};
+
 //-----------------------------------------------------
 //Deep Copy
 //-----------------------------------------------------
@@ -833,7 +1002,7 @@ export const str2d = (arr2d: any[][]) => {
   return str;
 };
 //-----------------------------------------------------
-//二次元配列を連想配列に変換する、０行目はオブジェクトのキー
+//二次元配列をオブジェクト(連想)配列に変換する、０行目はオブジェクトのキー
 //[["氏名", "年齢", "性別"],  ["今野 智博", "75", "男"]]
 //-----------------------------------------------------
 export const conv2dToObj = (arr2d: any[][]) => {

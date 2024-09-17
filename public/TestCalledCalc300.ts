@@ -9,8 +9,56 @@
 // 毎年6月13日 2015年から数えて
 // 13,201506,,プリン誕生日(%N),300,1
 
-import * as CallLib from './CalenderLib';
-import { Result1 } from '@/pages/Holiday2';
+// import * as CallLib from "./CalenderLib";
+// import { Result1 } from "@/pages/Holiday2";
+//-----------------------------------
+// 日付("2024-5-16")+plusをDate変換される
+//-----------------------------------
+export const stringToDate = (dateString1: string, pulas: number = 0): Date => {
+  const dt = '' !== dateString1 ? new Date(dateString1) : new Date();
+  dt.setDate(dt.getDate() + pulas);
+  return dt;
+};
+//-----------------------------------------------------------
+// 二つの日付("2024/5/1","2024,5,5")の差分を日数で返す
+// 初日は含まない   dateFlag=false : 年齢, (default)true: 日数
+//-----------------------------------------------------------
+export const getDateDiff = (
+  dateString1: string,
+  dateString2: string,
+  dateFlag: boolean = true,
+) => {
+  const date1 = new Date(dateString1);
+  const date2 = new Date(dateString2);
+  // 2つの日付の差分（ミリ秒）を計算
+  const msDiff = date2.getTime() - date1.getTime();
+  // 求めた差分（ミリ秒）を日付に変換
+  // 差分÷(1000ミリ秒×60秒×60分×24時間)
+  // ceil()「0.01」のように微細な値でも切り上げとなります。
+  // またマイナスの値はゼロ方向に切り上げとなることに注意しましょう。
+  //const diff1 = Math.floor(msDiff / 1000); //DiffTime
+  const diff2 = Math.floor(msDiff / 864e5); //DiffDate
+  // const diff3 = diff1 - 86400 * diff2;
+  const leap = countLeapYear(date1.getFullYear(), date2.getFullYear());
+  const diff4 = Math.floor((diff2 - leap * 366) / 365) + leap; //DiffYear
+  return dateFlag ? diff2 : diff4;
+};
+export type Result1 = {
+  type: number;
+  date: Date[];
+  data010: number;
+};
+//-----------------------------------------------
+// 二つ年（2000,2024）の間にあるうるう年の回数を返す
+//-----------------------------------------------
+const isLeapYear = (year: number): boolean =>
+  (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+export const countLeapYear = (fromYear: number, toYear: number = fromYear) => {
+  //数え上げ
+  let count = 0;
+  for (let i = fromYear; i <= toYear; i++) if (isLeapYear(i)) count++;
+  return count;
+};
 
 // export type EventType = {
 //   type: number;
@@ -18,7 +66,9 @@ import { Result1 } from '@/pages/Holiday2';
 //   data010: number;
 //   [lang: string]: number | Date[];
 // };
-// 日にち、回数月or始まり年月、数か月、で日付（）を返す
+// 日にち、回数月、始まり年月、数か月、で日付（）を返す
+// CalledCalc300(data[10], data[11], Number(data[12]))
+// 日にち、回数月、始まり年月、数か月、で日付（）を返す
 // CalledCalc300(data[10], data[11], Number(data[12]))
 export const CalledCalc300 = (
   cDayDate: number | string = 31, //日にち
@@ -28,8 +78,19 @@ export const CalledCalc300 = (
   flag: boolean = false, //月末:True or Auto 31:True
   endOfDurationDate: string = '', //年末 and flag=true
 ) => {
+  let num9 = Number(String(cCounts).replace(/[^\d]/g, '')); //数字のみ
+  let year9 = 0;
   const lastDate = calendarDate;
-  const [num9, year9, month] = CallLib.getNamYearMonth(cCounts);
+  //----------------------------
+  let month = num9 % 100; //月
+  month = month == 0 ? lastDate.getMonth() + 1 : month;
+  num9 = parseInt(String(num9 / 100)); //回数or始まり年
+  num9 >= 100
+    ? ((year9 = num9), (num9 = 0))
+    : (num9 = num9 % 100 == 0 ? 1 : num9 % 100);
+  //[31, 1006]  or [22, 200910]
+  //num9=10,year9=0,month=6  or  num9=0,year9=2009,month=10
+  //---------------------
   cDayDate = Number(String(cDayDate).replace(/[^\d]/g, '')); //数字のみ
   let repeat = parseInt(String(cDayDate / 100)); //繰り返し回数
   cDayDate = cDayDate % 100; //日にち
@@ -40,7 +101,7 @@ export const CalledCalc300 = (
     flag = true; //月末(cDayDate=31を指定したとき)
   }
   lastDate.setMonth(month - 1, Number(cDayDate)); //任意
-  const date31 = CallLib.stringToDate(lastDate.toString());
+  const date31 = stringToDate(lastDate.toString());
   year9 != 0 ? date31.setFullYear(year9) : '';
   const strDate31 = date31.toString();
   //-------------------
@@ -75,12 +136,10 @@ export const CalledCalc300 = (
   }
   return result;
 };
-
-//-----------------------
+//
 //回数、年月で日付[]を返す
 //callCalc301(5,"2024/9/10",2)//9/10から2か月ごと５回の日付[]を返す
 //callCalc301(5,"2024/9/10",2,true)//9/末日から2か月ごと５回の日付[]を返す
-//-----------------------
 const callCalc301 = (
   cCounts: string | number,
   strDate1: string,
@@ -107,9 +166,8 @@ const callCalc301 = (
   return date100;
 };
 
-//------------------------------------------
+//
 // 31,1006,1,国民健康保険料(第%-N/10期),310,3
-//------------------------------------------
 const callCalc302 = (
   num9: number,
   monthly: number,
@@ -134,26 +192,23 @@ const callCalc302 = (
     result.date.slice(-1)[0].getFullYear() - result.date[0].getFullYear();
   return result;
 };
-//------------------------------------------
-// 13,201506,,プリン誕生日(%N),300,1
-//------------------------------------------
+//
+//13,201506,,プリン誕生日(%N),300,1
 const callCalc303 = (strDate31: string, endOfMonth: Date, lastDate: Date) => {
   const result: Result1 = {
     type: 300,
     date: [],
     data010: 0, //年齢
   }; //strDate31:"Thu Oct 22 2009 17:19:59 GMT+0900 (日本標準時)"
-  result.data010 = CallLib.getDateDiff(strDate31, endOfMonth.toString(), false);
+  result.data010 = getDateDiff(strDate31, endOfMonth.toString(), false);
   result.date.push(lastDate);
   // result.date.push(endOfMonth);
   result.type = 303;
   return result;
 };
 
-//------------------------------------------
-// 年月日（回数）で日付[]を返す
-// 202, 1, 0, 正月, 302, 1;
-//------------------------------------------
+//
+// 年月日（回数）で日付[]を返す //202, 1, 0, 正月, 302, 1;
 const callCalc304 = (cCounts: string | number, strDate1: string) => {
   const num9 = Number(String(cCounts).replace(/[^\d]/g, '')); //数字のみ
   const dateStart = new Date(strDate1);
@@ -211,3 +266,11 @@ const getAddDayDate = (
     date.getDate() + addNum,
   );
 };
+
+//console.log(callCalc301(5,"2024/9/10",2));
+const cDayDate = 29; //日にち
+const cCounts = 192704; //始まり年月、回数月
+const monthly = 12; //か月毎
+// flag: boolean = false, //月末:True or Auto 31:True
+// endOfDurationDate: string = "" //年末 and flag=true
+console.log(CalledCalc300(cDayDate, cCounts, monthly, new Date('1973/2/1')));

@@ -10,17 +10,18 @@ import {
   writeFile,
 } from 'fs/promises';
 
-
+//サーバー専用
 
 type Props = {};
 
 function FsPromiss({}: Props) {
-  return <div>FsPromiss</div>;
+  return "<div>FsPromiss</div>;"
 }
 //ファイルを読み込む
-export async function loadFile(): Promise<void> {
+// loadFile('./public/yearly3.ts');
+export async function loadFile(path): Promise<void> {
   try {
-    const data: string = await readFile("", 'utf8');
+    const data: string = await readFile(path, 'utf8');
     console.log(data);
   } catch (error) {
     console.error('ファイルの読み込みに失敗しました:', error);

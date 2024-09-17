@@ -1,11 +1,11 @@
 // import React from 'react'
-import { holidayList } from './Rokuyo';
+import { HolidayList } from './Rokuyo';
 import * as calc from '~/CalenderLib';
 // 土用の丑の日
 //土用は「立春・立夏・立秋・立冬直前の十八日間」と定められるらしい
 //大暑が16日前+2日前が18日間の始まり(夏)
 //# ２４節気の定義28(3夏,9秋,15冬,21春)立〇、(0春,12秋)〇分
-function Holiday(rokuyo: holidayList[]): holidayList[] {
+function Holiday(rokuyo: HolidayList[]): HolidayList[] {
   const rituList = rokuyo.filter((data) => {
     //シャローコピー
     //立秋、大暑、丑の日
@@ -33,10 +33,10 @@ function Holiday(rokuyo: holidayList[]): holidayList[] {
     // console.log(start1, end1, rituObj, result);
     // console.log(result);
 
-    const result = result1.map((data): holidayList => {
+    const result = result1.map((data): HolidayList => {
       // const faultyCopy = JSON.parse(JSON.stringify(data));
 
-      const faultyCopy: holidayList = calc.deepCloneObj(data);
+      const faultyCopy: HolidayList = calc.deepCloneObj(data);
       faultyCopy.order = 31; //30以上49以下
       faultyCopy.name = '土用の丑';
       faultyCopy.type = 'doyoObj';

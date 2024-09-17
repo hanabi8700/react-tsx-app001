@@ -12,40 +12,94 @@ body {
   /* ex. 20px*0.8em=16px */
   /* ex. 100%*0.8em=80%　*/
 }
-header {
-  width: 100%;
-  padding: 15px 0;
-  /* margin: 0 auto; */
-  /* で要素自体を中央右寄せにしたこと */
-  /* text-align: center; */
-  /* で文字を中央寄せにしたこと */
-  /* height: 100px; */
-  background-color: #337079;
-  color: white;
-}
-.headline {
-  font-size: x-large;
-}
-.nav-list {
-  /* line-height: 100px; */
-  display: flex;
-  align-items: baseline;
+ul {
   list-style: none;
 }
-.nav-list-item {
-  margin: 0 20px;
-  /* flex: 1 calc((100% - 30%) / 4); */
-  /* flex: 1 auto; */
-  white-space: nowrap;
-}
-.nav-list-item a {
-  color: white;
+a {
   text-decoration: none;
+  color: #eee;
+  cursor: pointer;
 }
-.nav-list-item > a:hover {
-  /* color: skyblue; */
-  font-size: 1.8em; /*文字サイズ1.8倍*/
+img {
+  object-fit: cover;
+}
+body {
+  background-color: #ddd;
+  font-size: 0.8em;
+  /* 親要素を基準として0.8文字分の大きさ */
+  /* ex. 20px*0.8em=16px */
+  /* ex. 100%*0.8em=80%　*/
+}
+header {
+  background: #337079;
+  color: #000;
+  padding: 8px 40px 8px 64px;
+  border-left: none;
+  border-right: none;
+}
+.headers {
+  /* 文字が中央に集まる */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+.logo {
+  /* 左側に */
+  flex: 1;
+  font-size: 32px;
   font-weight: bold;
+}
+.menus {
+  /* 右側文字一列 */
+  padding: 0 24px;
+  display: inline-flex;
+}
+.menus a {
+  font-size: 16px;
+  padding: 0 8px;
+}
+.search {
+  width: 140px;
+  height: 30px;
+  display: flex;
+  background: #ccc;
+  border-radius: 4px;
+}
+.search input {
+  width: 110px;
+  height: 100%;
+  border: none;
+  outline: none;
+  /* box 右側丸みなし */
+  border-radius: 4px 0 0 4px;
+  padding: 4px;
+}
+.search-icon {
+  width: 30px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.hamburger {
+  width: 32px;
+  height: 32px;
+  flex: 1;
+  padding: 8px 32px;
+  display: none;
+}
+.hamburger .open {
+  display: block;
+}
+.hamburger .close {
+  display: none;
+}
+.hamburger.show .open {
+  display: none;
+}
+.hamburger.show .close {
+  display: block;
 }
 
 footer {
@@ -59,5 +113,43 @@ footer {
 ul.footer-menu li {
   display: inline;
   /* でインライン要素にすること */
+}
+
+@media (max-width: 1024px) {
+  header {
+    padding: 8px 40px 8px 0px;
+  }
+  .logo {
+    display: none;
+  }
+  .menus {
+    flex: 4;
+  }
+}
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+  .menus {
+    width: 100%;
+    position: fixed;
+    /* top: 48px; */
+    right: 0;
+    background: #068fff;
+    display: inline-block;
+    top: -400px;
+    transition: top 0.4s;
+  }
+  .menus.show {
+    top: 48px;
+  }
+  .menus li {
+    display: grid;
+    place-items: center;
+    margin: 24px 0;
+  }
+  .headers {
+    flex-wrap: nowrap;
+  }
 }
 /* -------------------------------------- */

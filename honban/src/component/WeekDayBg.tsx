@@ -1,9 +1,9 @@
 import * as calc from '~/CalenderLib';
-import { holidayList } from '../pages/Rokuyo';
+import { HolidayList } from '../pages/Rokuyo';
 interface Props {
   ctDate: string;
   weeksNum: number;
-  dataset: holidayList[];
+  dataset: HolidayList[];
 }
 //-----------------------------------------------------
 // １週間のバックグラウンド関数
