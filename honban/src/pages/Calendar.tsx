@@ -96,7 +96,7 @@ const useCounter = (initialValue = 0) => {
 // カレンダー本体
 //-----------------------------------------------------
 const debug8 = true;
-const debug9 = false;
+const debug9 = true;
 export const Calendar = () => {
   debug9 && console.log('Calendar');
   const {
@@ -226,6 +226,8 @@ export const Calendar = () => {
       dataObj2.iserror,
       dataObj2.iserror ? dataObj2.iserror : dataObj2.data, //config.url//code
       dataObj2.iserror ? dataObj2.iserror.message : '',
+      dataObj2.isLoading,
+      dataObj2.isValidating,
     );
   //------------------------------------------
   //arrayBuffer(ShiftJis)-->decode-->UTF8へ変換関数
@@ -264,8 +266,11 @@ export const Calendar = () => {
   debug9 &&
     console.log(
       'dataRECV',
-      dataObj.iserror ? dataObj.iserror : dataObj.data, //config.url//code
-      dataObj.iserror ? dataObj.iserror.message : '',
+      dataObj2.iserror,
+      dataObj2.iserror ? dataObj2.iserror : dataObj2.data, //config.url//code
+      dataObj2.iserror ? dataObj2.iserror.message : '',
+      dataObj2.isLoading,
+      dataObj2.isValidating
     );
   debug9 && console.log('Calendar-render');
   stockedDays = CalenderStack(holidayArray, stockedDays, true, true); //初期化伴う

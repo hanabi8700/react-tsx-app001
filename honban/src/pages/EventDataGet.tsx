@@ -10,6 +10,16 @@ import fetchers from './Fetchers';
 // 'https://jsonplaceholder.typicode.com/users/1',
 const debug9 = false;
 
+//-----------------------------------------------------
+//通信関数
+//一般的に
+//const { data, error, isValidating, mutate } = useSWR(key, fetcher, options)
+//// console.log(data, error, isLoading, isValidating)
+//undefined undefined true true  // => フェッチの開始
+//undefined Error false false    // => フェッチの完了、エラーを取得
+//undefined Error false true     // => 再試行の開始
+//Data undefined false false     // => 再試行の完了、データを取得
+//-----------------------------------------------------
 export const EventDataGet = (
   // method: string,
   endpointUrl: string,
@@ -23,7 +33,7 @@ export const EventDataGet = (
   debug9 && console.log('dataGet', endpointUrl);
   // const url = `${endpointUrl}?start=2022-03-27T00%3A00%3A00%2B09%3A00&end=2022-05-08T00%3A00%3A00%2B09%3A00`;
   // const url = `${endpointUrl}?start=${startTime}&end=${endTime}`;
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, isValidating } = useSWR(
     [endpointUrl, option],
     ([url, option]) => fetchers(url, option),
     {
@@ -53,5 +63,15 @@ export const EventDataGet = (
     data: data,
     iserror: error,
     isLoading,
+    isValidating,
   };
 };
+
+//mutate をキャッシュを更新するために利用できます。
+//例えば、下記のようにすることで全てのキャッシュデータをクリアできます。
+//const { mutate } = useSWRConfig()
+// mutate(
+//   key => true, // どのキャッシュキーを更新するか
+//   undefined, // キャッシュデータを `undefined` に更新する
+//   { revalidate: false } // 再検証しない
+// )
