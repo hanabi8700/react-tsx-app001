@@ -28,19 +28,32 @@ const debug9 = false;
 // CalledCalc400(2,"200001",2,new Date("1973/4/1")) // [1973-01-08]
 //------------------------------------
 export const CalledCalc400 = (
-  cWeeks: number | string = 23,
-  date: string = '',
-  cWeekdays: number | string = 23,
+  cWeeks: number | string = 23, //週間
+  date: string = '', //始年月
+  cWeekdays: number | string = 23, //曜日
   calendarDate: Date = new Date(),
+
   flag: boolean = false,
 ) => {
-  const date1 = date.toString().padStart(2, '0').slice(-2); //Get Month
-  const firstDate = CallLib.get8NumToDate(date1);
-  firstDate.setFullYear(calendarDate.getFullYear());
-  debug9 && console.log('firstDate:', date1, '月', firstDate.toLocaleDateString());
-
+  const lastDate = structuredClone(calendarDate); //DeepCopy
+  const monthStr = date.toString().padStart(2, '0').slice(-2);
+  //始まり年月より月を取得後、今年の日付取得（取得月で）後、カレンダー年に変更
+  const firstDate = CallLib.get8NumToDate(monthStr);
+  firstDate.setFullYear(lastDate.getFullYear());
+  //
   flag ? firstDate.setMonth(firstDate.getMonth(), 1) : '';
-  const strDate1 = firstDate.toLocaleDateString();
+  debug9 &&
+    console.log(
+      'lastDate',
+      lastDate.toLocaleDateString(),
+      'firstDate:',
+      monthStr,
+      '月',
+      firstDate.toLocaleDateString(),
+    );
+  const strDate1 = Number(monthStr)
+    ? firstDate.toLocaleDateString()
+    : lastDate.toLocaleDateString();
   const weekdays = cWeekdays; //曜日
   const weeks = cWeeks; //週
   const result: Result1 = {
@@ -48,25 +61,29 @@ export const CalledCalc400 = (
     date: [],
     data010: 0,
   };
-  result.date = callCalc401(weekdays, weeks, strDate1);
+  result.date = callCalc401(weeks, weekdays, strDate1);
   return result;
 };
 
-// 曜日、週、年月で日付（）を返す
+// 週、曜日、年月で日付（）を返す
 // 13,0,2,缶瓶収集日,400,3  #第13週毎月、火曜日
 // 7,0,36,ごみ収集日,400,3  #毎週毎月、水土曜日
+//console.log('F401:', callCalc401(13,2,""));#第13週毎月、火曜日
+//'F401:', [ new Date('2024-09-02T15:00:00.000Z'), new Date('2024-09-16T15:00:00.000Z') ]
+//
 const callCalc401 = (
-  weekdays: string | number,
   weeks: string | number,
+  weekdays: string | number,
   strDate1: string,
 ) => {
   const date100: Date[] = [];
+  weeks = Number(weeks) === 7 ? 1234567 : weeks;
   CallLib.numberStringToArray(weeks).forEach((week) => {
     CallLib.numberStringToArray(weekdays).forEach((weekday) => {
-      debug9 && console.log('day401', weekday, '曜日', week, '週', strDate1);
-      const date00 = CallLib.getSpecificDayDate(weekday, week, strDate1);
-      debug9 && console.log('date00', date00.toLocaleDateString());
-      date100.push(date00);
+      debug9 && console.log('day401', week, '週', weekday, '曜日', strDate1);
+      const result = CallLib.getSpecificDayDate(weekday, week, strDate1);
+      debug9 && console.log('result', result.toLocaleDateString());
+      date100.push(result);
       // const jc = date00.toLocaleString(locale, options1);
     });
   });

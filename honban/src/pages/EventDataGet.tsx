@@ -8,7 +8,7 @@ import fetchers from './Fetchers';
 // データの事前読み込み（当然キャッシュに保存される）
 // plelaod('https://jsonplaceholder.typicode.com/users/1', fetcher);
 // 'https://jsonplaceholder.typicode.com/users/1',
-const debug9 = false;
+// const debug9 = true;
 
 //-----------------------------------------------------
 //通信関数
@@ -30,7 +30,7 @@ export const EventDataGet = (
   // 第一引数にキャッシュキー、第二引数にfetcherを渡す。fetcherは事前に用意する必要がある
   // 第三引数にはoptionを渡せるが省略も可能
   // await delay();
-  debug9 && console.log('dataGet', endpointUrl);
+
   // const url = `${endpointUrl}?start=2022-03-27T00%3A00%3A00%2B09%3A00&end=2022-05-08T00%3A00%3A00%2B09%3A00`;
   // const url = `${endpointUrl}?start=${startTime}&end=${endTime}`;
   const { data, error, isLoading, isValidating } = useSWR(

@@ -70,7 +70,7 @@ export const CalenderStack = (
 };
 
 //並び替え stockedDaysの並び替え（破壊的）stockedDays[].state
-export const CalenderStack1 = (stockedDays: stockedDaysType[]) => {
+const CalenderStack1 = (stockedDays: stockedDaysType[]) => {
   debug9 && console.log('stockedDaysの並び替え....');
   const memory: number[] = [];
   for (let stockIndex = 0; stockIndex < stockedDays.length; stockIndex++) {

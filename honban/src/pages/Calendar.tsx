@@ -6,10 +6,8 @@ import './Calendar.css';
 import Rokuyo, { HolidayList } from './Rokuyo';
 
 import Holiday from './Holiday';
-import { EventDataGet } from './EventDataGet';
 import WeekDay from '../component/WeekDay';
-import { stockedDaysType, CalenderStack } from '~/CalenderStack';
-import { Holiday2 } from './Holiday2';
+import { ServerAccess } from './ServerAccess';
 
 // export const fetchUrlArray = () => {
 //   const url = [
@@ -19,7 +17,6 @@ import { Holiday2 } from './Holiday2';
 //     'https://hanamaru8700.com/cgi-bin/hanaflask/index.cgi/hanacalen/holiday003',
 //   ];
 // };
-let stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
 const numRandom = () => Math.floor(Math.random() * 10000) + 1; //ランダム数値
 
 //-----------------------------------------------------
@@ -107,7 +104,7 @@ export const Calendar = () => {
     decrementY,
     reset,
     idouBtn,
-    uDate,
+    // uDate,
   } = useCounter();
   //
   //dayOfWeeks 日月～土
@@ -198,114 +195,17 @@ export const Calendar = () => {
     //ID設定
     element.id = numRandom();
   }
-  //------------------------
-  //通信データー取得範囲
-  // console.log(holidayArray);
-  // const endpointUrl = 'hanaflask/index.cgi/hanacalen/holiday';
-  //------------------------
-  const endpointUrl = 'webcalhana/hanafullcal.py';
-
-  const startDateStr = calc.getFormatDateTimeStr(
-    calendarDates.prevDateLastWeek as Date,
+  //-----------------------------------------------------
+  // サーバーへアクセス Get
+  //-----------------------------------------------------
+  const [stockedDays, dataEvent, holidayArray2] = ServerAccess(
+    calendarDates,
+    calendarDateStr,
+    lastDateDay,
+    holidayArray,
   );
-  const endDateStr = calc.getFormatDateTimeStr(
-    lastDateDay, // カレンダー表示最終日
-    // calendarDates.nextDateFirstWeek as Date,
-  );
-  debug9 && console.log('通信データ範囲', startDateStr, endDateStr);
-  //////////////////////////////////////////
-  //特別記念日など取得のための通信
-  const endpointUrl2 = 'webcalhana/data/yearly365.txt'; //honban\dist\yearly366.dat
-  const dataObj2 = EventDataGet(endpointUrl2, {
-    // responseType: 'blob', //text/plane,blob
-    responseType: 'arraybuffer',
-  });
-  debug9 &&
-    console.log(
-      'dataRECV2',
-      dataObj2.iserror,
-      dataObj2.iserror ? dataObj2.iserror : dataObj2.data, //config.url//code
-      dataObj2.iserror ? dataObj2.iserror.message : '',
-      dataObj2.isLoading,
-      dataObj2.isValidating,
-    );
-  //------------------------------------------
-  //arrayBuffer(ShiftJis)-->decode-->UTF8へ変換関数
-  //------------------------------------------
-  function decodeShiftJis(data: ArrayBuffer): string {
-    return new TextDecoder('shift-jis').decode(data);
-  }
-  //********** */
-  //通信OK？
-  //********** */
-  if (dataObj2.data) {
-    //特別記念日など取得
-    const specialHolidayTxt = decodeShiftJis(dataObj2.data);
-    console.log('specialHoliday', specialHolidayTxt);
-    const result4: HolidayList[] = Holiday2(specialHolidayTxt, calendarDateStr);
-    holidayArray = holidayArray.concat(result4); //配列結合シャローコピー
-    for (const element of holidayArray) {
-      element.id = numRandom(); //ID設定
-      //element.order = element.order ? element.order : 1101;
-      //element.date = calc.getDateWithString(new Date(element.start as string));
-    }
-    calc.dateSort(holidayArray, ['date', 'order']);
-  }
-  ///////////////////////////////////////////////
-  //------------------------
-  // 通信
-  //------------------------
-  const url = `${endpointUrl}?start=${startDateStr}&end=${endDateStr}`;
-  const dataObj = EventDataGet(url, {});
-  // const dataObj2 = useCallback(
-  //   (dataObj = EventDataGet(endpointUrl, startDateStr, endDateStr)),
-  //   [startDateStr, endDateStr],
-  // );
-
-  // console.log(dataObj, dataObj.data, dataObj.iserror);
-  debug9 &&
-    console.log(
-      'dataRECV',
-      dataObj2.iserror,
-      dataObj2.iserror ? dataObj2.iserror : dataObj2.data, //config.url//code
-      dataObj2.iserror ? dataObj2.iserror.message : '',
-      dataObj2.isLoading,
-      dataObj2.isValidating
-    );
-  debug9 && console.log('Calendar-render');
-  stockedDays = CalenderStack(holidayArray, stockedDays, true, true); //初期化伴う
-
-  //********** */
-  //通信OK？
-  //********** */
-  let dataEvent = [];
-  if (dataObj.data) {
-    //ダウンロードしたデーター
-    // const data1 = JSON.stringify(dataObj.data, null, 2);
-    dataEvent = calc.deepCloneObj(dataObj.data);
-    for (const element of dataEvent) {
-      element.id = numRandom(); //ID設定
-      element.order = element.order ? element.order : 1101;
-      element.date = calc.getDateWithString(new Date(element.start as string));
-    }
-    //test項目
-    dataEvent.push({
-      title: 'testTEST',
-      id: numRandom(),
-      order: 1109,
-      date: '2024/09/14',
-      duration: 2,
-      backgroundColor: 'orange',
-      start: '2024-09-14T00:00:00+09:00',
-    });
-    stockedDays = CalenderStack(dataEvent, stockedDays); //並び替え
-  }
-  //該当クリック日付枠のイベントを検索
-  calc.dateSort(stockedDays, ['date']);
-  debug8 && console.log('Calendar-stockedDays:', stockedDays);
-  debug8 && console.log('Calendar-holidayArray:', holidayArray);
-  debug8 && console.log('Calendar-dataEvent:', dataEvent);
-
+  holidayArray = holidayArray2;
+  debug9 && console.log('---------------------------------');
   // -----------------------------Display-Calendar-------------------------------------
   return (
     <>
@@ -324,10 +224,11 @@ export const Calendar = () => {
             {Button(reset, '今日', 'bt_posttoday')}
             <input
               className="bt_today"
-              type="date"
+              type="month"
               name="birth"
               onChange={idouBtn}
-              value={calc.getFormatDateTimeStr(uDate)}
+              pattern="[0-9]{4}-[0-9]{2}"
+              // value={calc.getFormatDateTimeStr(uDate)}
             />
             {/* {Button(idouBtn, '移動', 'bt_idou')} */}
             {/* <button className="btn3" type="button">移動</button> */}

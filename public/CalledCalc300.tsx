@@ -20,15 +20,17 @@ import { Result1 } from '@/pages/Holiday2';
 // };
 // 日にち、回数月or始まり年月、数か月、で日付（）を返す
 // CalledCalc300(data[10], data[11], Number(data[12]))
+const debug9 = false;
 export const CalledCalc300 = (
   cDayDate: number | string = 31, //日にち
   cCounts: number | string = 10, //始まり年月、回数月
-  monthly: number = 1, //か月毎
+  monthly: number = 1, //か月毎 Number(data[12])
   calendarDate: Date = new Date(), //カレンダー日付
   flag: boolean = false, //月末:True or Auto 31:True
   endOfDurationDate: string = '', //年末 and flag=true
 ) => {
-  const lastDate = calendarDate;
+  // const lastDate = JSON.parse(JSON.stringify(calendarDate));
+  const lastDate = structuredClone(calendarDate);
   const [num9, year9, month] = CallLib.getNamYearMonth(cCounts);
   cDayDate = Number(String(cDayDate).replace(/[^\d]/g, '')); //数字のみ
   let repeat = parseInt(String(cDayDate / 100)); //繰り返し回数
@@ -52,20 +54,34 @@ export const CalledCalc300 = (
   };
 
   //----------------------
+  monthly = monthly ? monthly : 12; //monthly==0,12
   repeat = repeat <= 0 ? 1 : repeat;
+  const num99 = monthly == 12 ? num9 : 12;
+  //15,11,,七五三,300,1
+  //5,1,2,NHK支払(%-M-%M月分),310,3
+  //F304--------------202, 1, 0, 正月, 302, 1;
   if (repeat > 1) result = callCalc304(repeat, strDate31);
   else {
-    if (year9) {
-      //始まり年あり
+    if (year9 && monthly == 12) {
+      //F303-------------------
+      //始まり年あり,12ヶ月ごと
       const endOfMonth =
         endOfDurationDate === ''
           ? getEndOfYear(lastDate) //年末(default)
           : getAddMonthDate(new Date(endOfDurationDate)); //月末
       result = callCalc303(strDate31, endOfMonth, lastDate); //年齢
-      //console.log('年齢', strDate31, endOfMonth, lastDate);
+      debug9 &&
+        console.log(
+          '年齢',
+          date31.toLocaleDateString(),
+          endOfMonth.toLocaleDateString(),
+          lastDate.toLocaleDateString(),
+          result,
+        );
     } else {
+      //F302-------------------
       result = callCalc302(
-        num9,
+        num99,
         monthly,
         flag, //true:月末(cDayDate=31を指定したとき)
         getAddDayDate(lastDate, 0),
@@ -111,8 +127,8 @@ const callCalc301 = (
 // 31,1006,1,国民健康保険料(第%-N/10期),310,3
 //------------------------------------------
 const callCalc302 = (
-  num9: number,
-  monthly: number,
+  num9: number, //1006=>10回
+  monthly: number, //1カ月
   flag: boolean,
   lastDate: Date = new Date(),
   yearAdd: string = '0',
@@ -122,6 +138,7 @@ const callCalc302 = (
     date: [],
     data010: 0,
   };
+  num9 = num9 < 1 ? 12 : num9;
   const yearDifference = lastDate.getFullYear() + Number(yearAdd);
   // Number(yearAdd == '' ? 0 : yearAdd);
   const dateDifference = new Date(lastDate.setFullYear(yearDifference));

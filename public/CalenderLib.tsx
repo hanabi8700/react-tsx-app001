@@ -768,16 +768,28 @@ export const range2 = (
   Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
 
 //-----------------------------------------------------
-// 文字列形式で取得するので改行文字で区切ってオブジェクト配列に変換
+// 文字列形式で取得するので改行文字で区切って配列に
+// その後","で区切ってオブジェクト配列に変換
+// calc.stringToObjectArray(specialHolidayTxt3,"\t")
+// [{10:xxxx,11:xxx,...30:xxxxx}...{}]
 //-----------------------------------------------------
-export const stringToObjectArray = (lineText: string) => {
-  const kugiri = /\r?\n/;
-  const lineList = lineText.split(kugiri, -1); //データを配列に
-  const keyList = range2(10, 26);
+export const stringToObjectArray = (
+  lineText: string,
+  separator2 = ',',
+  separator = /\r?\n/,
+  commentLine = true, ////コメント行削除
+) => {
+  // const kugiri = /\r?\n/;
+  const lineList = lineText.split(separator, -1); //データを配列に
+  const keyList = range2(10, 30);
+  const regex = commentLine ? /^#|^$/ : ''; //コメント行削除
   const resultObj = lineList
-    // .filter((data, index) => data[index] !== 0) // 2行目以降がデータのため
+    .filter((data) => {
+      // console.log('Data:', data);
+      return !data.match(regex);
+    }) // 2行目以降がデータのため
     .map((line: string) => {
-      const valueList = line.split(',');
+      const valueList = line.split(separator2);
       const tmpObj: { [x: string]: string } = {};
       keyList.map((key, index) => (tmpObj[key] = valueList[index]));
       return tmpObj;
@@ -787,6 +799,7 @@ export const stringToObjectArray = (lineText: string) => {
 
 //-----------------------------------------------------
 //Deep Copy
+//const deepCopy = structuredClone(originalDate);
 //-----------------------------------------------------
 //structuredClone(value, transfer);
 //１．Deep Copy
@@ -830,6 +843,12 @@ export function deepCloneObj(obj: any): any {
 // const keys: Array<keyof typeof obj> = Object.keys(obj);
 // const name: string = obj[keys[0]];
 //
+//４．Deep Copy
+//Object,Array,Date,SetやMapなどのオブジェクトもコピーできる
+export const cloneObject4 = (originalDate: any) => {
+  const deepCopy = structuredClone(originalDate);
+  return deepCopy;
+};
 //
 //
 

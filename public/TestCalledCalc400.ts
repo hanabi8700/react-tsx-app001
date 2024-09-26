@@ -1,3 +1,4 @@
+import { number } from 'zod';
 //-----------------------------------
 // 日付("2024-5-16")+plusをDate変換される
 //-----------------------------------
@@ -46,6 +47,7 @@ export const numberStringToArray = (num: string | number): number[] => {
 export const get8NumToDate = (dateString: string | number) => {
   // const date1 = stringToDate(String(dateString));
   const dateString2 = String(dateString).replace(/[^\d]/g, ''); //数字のみ
+  console.log('date', dateString, dateString2);
   const dl = dateString2.length;
   let a, b, c, c1, b1;
   if (dl === 4) {
@@ -74,7 +76,7 @@ export const get8NumToDate = (dateString: string | number) => {
     c1 = 1;
   }
   const dt = new Date(a, b - b1, c + c1, 0, 0, 0);
-  // console.log(dl, a, b, c, dt);
+  console.log(dl, a, b, c, dt);
   return dt;
 };
 
@@ -83,7 +85,7 @@ export type Result1 = {
   date: Date[];
   data010: number;
 };
-const debug9 = true;
+const debug9 = false;
 //------------------------------------
 // 週、始まり年月、曜日、
 // CalledCalc400(2,"200001",2,new Date("1973/4/1")) // [1973-01-08]
@@ -96,14 +98,26 @@ export const CalledCalc400 = (
   calendarDate: Date = new Date(), //
   flag: boolean = false, //true:1日
 ) => {
-  const date1 = date.toString().padStart(2, '0').slice(-2); //Get Month
-  const firstDate = get8NumToDate(date1);
+  const lastDate = structuredClone(calendarDate); //DeepCopy
+  const monthStr = date.toString().padStart(2, '0').slice(-2);
+  //始まり年月より月を取得後、今年の日付取得（取得月で）後、カレンダー年に変更
+  const firstDate = get8NumToDate(monthStr);
   console.log('firstDate', firstDate.toLocaleDateString());
-  firstDate.setFullYear(calendarDate.getFullYear());
-  debug9 &&
-    console.log('firstDate:', date1, '月', firstDate.toLocaleDateString());
+  firstDate.setFullYear(lastDate.getFullYear());
+  //
   flag ? firstDate.setMonth(firstDate.getMonth(), 1) : '';
-  const strDate1 = firstDate.toLocaleDateString();
+  debug9 &&
+    console.log(
+      'lastDate',
+      lastDate.toLocaleDateString(),
+      'firstDate:',
+      monthStr,
+      '月',
+      firstDate.toLocaleDateString(),
+    );
+  const strDate1 = Number(monthStr)
+    ? firstDate.toLocaleDateString()
+    : lastDate.toLocaleDateString();
   const weekdays = cWeekdays; //曜日
   const weeks = cWeeks; //週
   const result: Result1 = {
@@ -111,7 +125,7 @@ export const CalledCalc400 = (
     date: [],
     data010: 0,
   };
-  result.date = callCalc401(weekdays, weeks, strDate1);
+  result.date = callCalc401(weeks, weekdays, strDate1);
   return result;
 };
 
@@ -119,28 +133,30 @@ export const CalledCalc400 = (
 // 13,0,2,缶瓶収集日,400,3  #第13週毎月、火曜日
 // 7,0,36,ごみ収集日,400,3  #毎週毎月、水土曜日
 const callCalc401 = (
-  weekdays: string | number,
   weeks: string | number,
+  weekdays: string | number,
   strDate1: string,
 ) => {
   const date100: Date[] = [];
+  weeks = Number(weeks) === 7 ? 123456 : weeks;
   numberStringToArray(weeks).forEach((week) => {
     numberStringToArray(weekdays).forEach((weekday) => {
-      debug9 && console.log('day401', weekday, '曜日', week, '週', strDate1);
-      const date00 = getSpecificDayDate(weekday, week, strDate1);
-      debug9 && console.log('date00', date00.toLocaleDateString());
-      date100.push(date00);
+      debug9 && console.log('day401', week, '週', weekday, '曜日', strDate1);
+      const result = getSpecificDayDate(weekday, week, strDate1);
+      debug9 && console.log('result', result.toLocaleDateString());
+      date100.push(result);
       // const jc = date00.toLocaleString(locale, options1);
     });
   });
   return date100;
 };
 
-const cWeeks = 2;
-const date = '200001';
-const cWeekdays = 1;
-const calendarDate = new Date('1973/4/20');
+const cWeeks = '7'; //週間
+const date = ''; //始まり年月
+const cWeekdays = 36; //曜日
+const calendarDate = new Date('2024/9/20');
 
 console.log('C400', CalledCalc400(cWeeks, date, cWeekdays, calendarDate));
-// const date1 = date.toString().padStart(2, "0").slice(-2);
-// console.log(date1, get8NumToDate(date1));
+const monthStr = date.toString().padStart(2, '0').slice(-2);
+console.log(monthStr, get8NumToDate(monthStr).toLocaleDateString());
+//console.log('F401:', callCalc401(13, 2, ''));
