@@ -109,12 +109,12 @@ export const Calendar = () => {
   //
   //dayOfWeeks 日月～土
   const weekDays = calc.getWeekday() as string[];
-
   const date5 = new Date();
-  const calendarDateStr = calc.getDateWithString(
-    calc.getAddMonthDate2(calc.getDateWithString(date5), countx, true) as Date,
-  );
-  debug9 && console.log('カレンダー', calendarDateStr);
+  const date55 = calc.addMonths2Date(date5, countx);
+  const calendarDateStr = calc.getDateWithString(date55);
+  debug9 && console.log('カレンダー', calendarDateStr, date5, countx);
+  //カレンダー 2024/01/30 Sat Sep 28 2024 13:55:35 GMT+0900 (日本標準時) -8
+  //カレンダー 2024/03/01 Sat Sep 28 2024 13:58:18 GMT+0900 (日本標準時) -7
 
   //--------------------------------------------------------
   // date.toLocaleDateString(); // 2020/5/13

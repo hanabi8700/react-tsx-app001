@@ -424,7 +424,8 @@ export const get8NumToDate = (dateString: string | number) => {
   const dt = new Date(a, b - b1, c + c1, 0, 0, 0);
   // console.log(dl, a, b, c, dt);
   return dt;
-};
+}
+
 // export const get8NumToDate = (dateString: string | number = '') => {
 //   let dateString2 = String(dateString).replace(/[^\d]/g, ''); //数字のみ
 //   dateString2 =
@@ -465,6 +466,17 @@ export const getFormatDateTimeStr = (date: Date, time: number = 0) => {
     .split('T')[time];
 };
 
+//
+export const getFirstLastDayOfMouth = (dateString: string | number) => {
+  const date = get8NumToDate(dateString);
+  const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  const lastDayOfMonth = new Date(
+    firstDayOfMonth.getFullYear(),
+    firstDayOfMonth.getMonth() + 1,
+    0,
+  );
+  return [firstDayOfMonth, lastDayOfMonth];
+};
 //------------------------
 // 日付の初期化 1日
 // initDate("2024-5-6").toLocaleString() //'2024/5/1 0:00:00'
@@ -478,42 +490,35 @@ export const initDate = (dateString1 = '', day = 1, hour = 0, minute = 0) => {
 };
 
 //----------------------------------------------------------
-//○ヶ月後、○ヶ月前を取得する
+//契約○ヶ月後、○ヶ月前を取得する getAddMonthDate2("2024/05/06", 3)
 //"2024/05/06"(月)->monthTerm=3  3カ月後 "2024年08月05日"(月)
 //"2024/05/06"(月)->monthTerm=-3 3カ月前 "2024年02月07日"(月)
+//getAddMonthDate2("2024/05/06", -3,false)//'2024年02月07日'
 //----------------------------------------------------------
 export const getAddMonthDate2 = (
   date3: string,
   monthTerm: number = 1,
-  sameDate = false, //○ヶ月前後の同じ日にちは :1
+  //sameDate = false, //○ヶ月前後の同じ日にちは :1
   getDateMode = true,
 ) => {
   // 年、月、日をそれぞれ算出
   const year3 = Number(date3.substring(0, 4));
   const month3 = Number(date3.substring(5, 7));
   let day3 = Number(date3.substring(8, 10));
-  //?ヶ月前後を選択の際はその値を+-で;
-  const endOfMonth = (function (paraYear, paraMonth) {
+  //?ヶ月前後を選択の際はその値を+-で;月末日取得
+  // new Date(dt.getFullYear(), dt.getMonth() + 1, 0)
+  const endOfMonthDay = (function (paraYear, paraMonth) {
     const tempEndDate = new Date(paraYear, paraMonth, 0);
     return tempEndDate.getDate();
   })(year3, month3 + monthTerm);
-
-  // if (day3 > endOfMonth) {
-  //   day3 = endOfMonth;
-  // } else {
-  //   if (monthTerm >= 0) {
-  //     day3 = day3 - 1;
-  //   } else {
-  //     day3 = day3 + 1;
-  //   }
-  // }
-  day3 = day3 > endOfMonth ? endOfMonth : monthTerm >= 0 ? day3 - 1 : day3 + 1;
+  day3 =
+    day3 > endOfMonthDay ? endOfMonthDay : monthTerm >= 0 ? day3 - 1 : day3 + 1;
 
   const newDate = initDate(); //本月1日
 
   newDate.setFullYear(year3);
   newDate.setMonth(month3 + monthTerm - 1);
-  newDate.setDate(day3 + (sameDate ? 1 : 0));
+  newDate.setDate(day3); //+ (sameDate ? 1 : 0));
 
   const resultYear = newDate.getFullYear();
   const resultMonth = ('00' + (newDate.getMonth() + 1)).slice(-2);
@@ -523,6 +528,29 @@ export const getAddMonthDate2 = (
     ? newDate
     : resultYear + '年' + resultMonth + '月' + resultDay + '日';
   return result;
+};
+//具体的計算例 民法第143条第2項（暦による期間の計算）契約
+//週の場合は、例えば火曜日に期間が3週間の契約が発効した場合は、
+//  期間の満了日は、3週間後の火曜日の前日の月曜日ということになります。
+//月の場合は、例えば4月1日に期間が1ヶ月間の契約が発効した場合は、
+//  期間の満了日は、1ヶ月後の5月1日の前日の4月30日ということになります。
+//ただし、1月30日に1ヶ月間の契約が発効した場合は、2月30日がありませんので、
+//  2月28日（閏年の場合は2月29日）が期間の満了日になります。
+//年の場合は、例えば平成18年6月1日に期間が2年間の契約が発効した場合は、
+//  期間の満了日は、2年後の平成20年6月1日の前日の平成20年5月31日ということになります。
+//--------------------------
+//--------------------------
+//日付にXヶ月を追加
+//addMonths2Date(new Date('2024/4/1'), 6).toLocaleDateString()//'2024/10/1'
+//addMonths2Date(new Date('2024/1/31'), 1).toLocaleDateString()//'2024/2/29'
+//--------------------------
+export const addMonths2Date = (date: Date, months: number = 1) => {
+  const d = date.getDate(); //Day
+  date.setMonth(date.getMonth() + +months);
+  if (date.getDate() != d) {
+    date.setDate(0); //前月末日に戻る
+  }
+  return date;
 };
 
 //-------------------------------------------------------------------
