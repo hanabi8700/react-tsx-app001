@@ -424,7 +424,7 @@ export const get8NumToDate = (dateString: string | number) => {
   const dt = new Date(a, b - b1, c + c1, 0, 0, 0);
   // console.log(dl, a, b, c, dt);
   return dt;
-}
+};
 
 // export const get8NumToDate = (dateString: string | number = '') => {
 //   let dateString2 = String(dateString).replace(/[^\d]/g, ''); //数字のみ
@@ -465,17 +465,31 @@ export const getFormatDateTimeStr = (date: Date, time: number = 0) => {
     .toISOString()
     .split('T')[time];
 };
-
-//
+//-----------------------------------------------------
+//その月の初日、最終日、先月、来月を配列で返す
+//getFirstLastDayOfMouth('2024/02/20')[0] //'2024/2/1'
+//-----------------------------------------------------
 export const getFirstLastDayOfMouth = (dateString: string | number) => {
   const date = get8NumToDate(dateString);
   const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  // 来月初めて
+  const nextMonth = new Date(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    1, //date.getDate(),
+  );
+  // 先月末
+  const lastMonth = new Date(
+    date.getFullYear(),
+    date.getMonth(), //- 1,
+    0, //date.getDate(),
+  );
   const lastDayOfMonth = new Date(
     firstDayOfMonth.getFullYear(),
     firstDayOfMonth.getMonth() + 1,
-    0,
+    0, //※次月の0日目＝今月の末日になる
   );
-  return [firstDayOfMonth, lastDayOfMonth];
+  return [firstDayOfMonth, lastDayOfMonth, lastMonth, nextMonth];
 };
 //------------------------
 // 日付の初期化 1日
@@ -488,12 +502,37 @@ export const initDate = (dateString1 = '', day = 1, hour = 0, minute = 0) => {
   dt.setHours(hour, minute, 0); //日付の時間を設定します。
   return dt;
 };
-
+//-----------------------------------------------------
+//〇ヶ月前後を選択の際はその値を+-で;月末日取得
+// new Date(dt.getFullYear(), dt.getMonth() + 1, 0)//最終日
+//console.log('endOfMD', endOfMD(2022,2));//'endOfMD', 28
+//console.log('endOfMD', endOfMD(2024,2));//'endOfMD', 29
+//console.log('endOfMD', endOfMD(2024,2,-5));//'endOfMD', 30  ,2023/09/30 ,2+(-5)=-3
+//-----------------------------------------------------
+export const endOfMD = (
+  year3: number,
+  month3: number,
+  monthTerm: number = 0,
+) => {
+  const endOfMonthDay = (function (paraYear, paraMonth) {
+    const tempEndDate = new Date(paraYear, paraMonth, 0); //最終日
+    //console.log(tempEndDate, paraYear, paraMonth);
+    return tempEndDate.getDate();
+  })(year3, month3 + monthTerm);
+  return endOfMonthDay;
+};
 //----------------------------------------------------------
 //契約○ヶ月後、○ヶ月前を取得する getAddMonthDate2("2024/05/06", 3)
 //"2024/05/06"(月)->monthTerm=3  3カ月後 "2024年08月05日"(月)
 //"2024/05/06"(月)->monthTerm=-3 3カ月前 "2024年02月07日"(月)
+//なお2月29日の一ヶ月前は1月30日である事には注意
 //getAddMonthDate2("2024/05/06", -3,false)//'2024年02月07日'
+//console.log(getAddMonthDate2('2023/11/30', 3, false));//'2024年02月29日'
+//console.log(getAddMonthDate2('2024/02/29', -1, false));//'2024年01月30日'
+//console.log(getAddMonthDate2('2024/05/30', -3, false));//2024年02月29日
+//console.log(getAddMonthDate2('2024/05/28', -3, false));//2024年02月29日
+//console.log(getAddMonthDate2('2024/05/01', 1, false));//'2024年05月31日'
+//console.log(getAddMonthDate2('2024/05/01', 0, false));//'2024年04月30日'XXX
 //----------------------------------------------------------
 export const getAddMonthDate2 = (
   date3: string,
@@ -505,12 +544,7 @@ export const getAddMonthDate2 = (
   const year3 = Number(date3.substring(0, 4));
   const month3 = Number(date3.substring(5, 7));
   let day3 = Number(date3.substring(8, 10));
-  //?ヶ月前後を選択の際はその値を+-で;月末日取得
-  // new Date(dt.getFullYear(), dt.getMonth() + 1, 0)
-  const endOfMonthDay = (function (paraYear, paraMonth) {
-    const tempEndDate = new Date(paraYear, paraMonth, 0);
-    return tempEndDate.getDate();
-  })(year3, month3 + monthTerm);
+  const endOfMonthDay = endOfMD(year3, month3, monthTerm);
   day3 =
     day3 > endOfMonthDay ? endOfMonthDay : monthTerm >= 0 ? day3 - 1 : day3 + 1;
 
@@ -518,7 +552,7 @@ export const getAddMonthDate2 = (
 
   newDate.setFullYear(year3);
   newDate.setMonth(month3 + monthTerm - 1);
-  newDate.setDate(day3); //+ (sameDate ? 1 : 0));
+  newDate.setDate(day3);
 
   const resultYear = newDate.getFullYear();
   const resultMonth = ('00' + (newDate.getMonth() + 1)).slice(-2);
@@ -529,6 +563,7 @@ export const getAddMonthDate2 = (
     : resultYear + '年' + resultMonth + '月' + resultDay + '日';
   return result;
 };
+//-------------------------------------------------------------------------
 //具体的計算例 民法第143条第2項（暦による期間の計算）契約
 //週の場合は、例えば火曜日に期間が3週間の契約が発効した場合は、
 //  期間の満了日は、3週間後の火曜日の前日の月曜日ということになります。
@@ -538,11 +573,12 @@ export const getAddMonthDate2 = (
 //  2月28日（閏年の場合は2月29日）が期間の満了日になります。
 //年の場合は、例えば平成18年6月1日に期間が2年間の契約が発効した場合は、
 //  期間の満了日は、2年後の平成20年6月1日の前日の平成20年5月31日ということになります。
+//---------------------------------------------------------------------------
 //--------------------------
-//--------------------------
-//日付にXヶ月を追加
+//日付に〇ヶ月を追加
 //addMonths2Date(new Date('2024/4/1'), 6).toLocaleDateString()//'2024/10/1'
 //addMonths2Date(new Date('2024/1/31'), 1).toLocaleDateString()//'2024/2/29'
+//console.log(addMonths2Date(new Date('2024/1/16'), 1).toLocaleDateString());//'2024/2/16'
 //--------------------------
 export const addMonths2Date = (date: Date, months: number = 1) => {
   const d = date.getDate(); //Day
@@ -552,7 +588,32 @@ export const addMonths2Date = (date: Date, months: number = 1) => {
   }
   return date;
 };
-
+//-----------------------------------------------------
+//日付に〇ヶ月を追加 第2引数の月を基本に
+//addMonths2(31,new Date('2024/4/1'), 6).toLocaleDateString()//'2024/10/31'
+//addMonths2(31,new Date('2024/1/31'), 1).toLocaleDateString()//'2024/2/29'
+//addMonths2(20, new Date('2024/9/16'), 0).toLocaleDateString();//'2024/9/20'
+//-----------------------------------------------------
+export const addMonths2Date3 = (
+  days: number,
+  date: Date,
+  months: number = 0,
+) => {
+  const baseDate = new Date(date.getFullYear(), date.getMonth()); // 計算の基準
+  const dateOfThisMonth = new Date(baseDate);
+  dateOfThisMonth.setMonth(dateOfThisMonth.getMonth() + months);
+  const endOfThisMonth = new Date(
+    dateOfThisMonth.getFullYear(),
+    dateOfThisMonth.getMonth() + 1,
+    0,
+  ); // 今月の末日
+  dateOfThisMonth.setDate(Math.min(Math.abs(days), endOfThisMonth.getDate())); // 今月の〇日
+  // console.log(
+  //   baseDate.toLocaleDateString(),
+  //   dateOfThisMonth.toLocaleDateString(),
+  // );
+  return dateOfThisMonth;
+};
 //-------------------------------------------------------------------
 // 1週間の曜日[日曜日始まり]に日付を日付[list]で返す
 // [{day: 0, date: 'Sun Jun 02 2024 19:06:36 GMT+0900 (日本標準時)'},{}...,{}]

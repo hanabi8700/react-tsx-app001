@@ -3,8 +3,6 @@
 // initDate("2024-5-6").toLocaleString() //'2024/5/1 0:00:00'
 // initDate("2024-5-6",1,22).toLocaleString()//'2024/5/1 22:00:00'
 
-import { log } from 'console';
-
 //------------------------
 export const initDate = (dateString1 = '', day = 1, hour = 0, minute = 0) => {
   const dt = '' !== dateString1 ? new Date(dateString1) : new Date();
@@ -22,7 +20,7 @@ export const initDate = (dateString1 = '', day = 1, hour = 0, minute = 0) => {
 export const getAddMonthDate2 = (
   date3: string,
   monthTerm: number = 1,
-  sameDate = false, //○ヶ月前後の同じ日にちは :true
+  // sameDate = false, //○ヶ月前後の同じ日にちは :true
   getDateMode = true,
 ) => {
   // 年、月、日をそれぞれ算出
@@ -31,10 +29,11 @@ export const getAddMonthDate2 = (
   let day3 = Number(date3.substring(8, 10));
   //?ヶ月前後を選択の際はその値を+-で;月末日取得
   // new Date(dt.getFullYear(), dt.getMonth() + 1, 0)
-  const endOfMonthDay = (function (paraYear, paraMonth) {
-    const tempEndDate = new Date(paraYear, paraMonth, 0);
-    return tempEndDate.getDate();
-  })(year3, month3 + monthTerm);
+  // const endOfMonthDay = (function (paraYear, paraMonth) {
+  //   const tempEndDate = new Date(paraYear, paraMonth, 0);
+  //   return tempEndDate.getDate();
+  // })(year3, month3 + monthTerm);
+  const endOfMonthDay = endOfMD(year3, month3, monthTerm);
 
   console.log('day3,endMD', day3, endOfMonthDay);
 
@@ -45,7 +44,7 @@ export const getAddMonthDate2 = (
 
   newDate.setFullYear(year3);
   newDate.setMonth(month3 + monthTerm - 1);
-  newDate.setDate(day3 + (sameDate ? 1 : 0));
+  newDate.setDate(day3);
 
   const resultYear = newDate.getFullYear();
   const resultMonth = ('00' + (newDate.getMonth() + 1)).slice(-2);
@@ -139,15 +138,31 @@ export const get8NumToDate = (dateString: string | number) => {
   // console.log(dl, a, b, c, dt);
   return dt;
 };
+//-----------------------------------------------------
+//その月の初日、最終日、先月、来月を配列で返す
+//getFirstLastDayOfMouth('2024/02/20')[0] //'2024/2/1'
+//-----------------------------------------------------
 export const getFirstLastDayOfMouth = (dateString: string | number) => {
   const date = get8NumToDate(dateString);
   const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  // 来月初めて
+  const nextMonth = new Date(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    1, //date.getDate(),
+  );
+  // 先月末
+  const lastMonth = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    0, //date.getDate(),
+  );
   const lastDayOfMonth = new Date(
     firstDayOfMonth.getFullYear(),
     firstDayOfMonth.getMonth() + 1,
     0,
-  );
-  return [firstDayOfMonth, lastDayOfMonth];
+  ); //ひと月足して日にち0日、月末日
+  return [firstDayOfMonth, lastDayOfMonth, lastMonth, nextMonth];
 };
 
 //--------------------------
@@ -155,8 +170,10 @@ export const getFirstLastDayOfMouth = (dateString: string | number) => {
 //addMonths(new Date('2024/4/1'), 6).toLocaleDateString()//'2024/10/1'
 //addMonths(new Date('2024/1/31'), 1).toLocaleDateString()//'2024/2/29'
 //--------------------------
-export const addMonths = (date: Date, months: number = 1) => {
-  const d = date.getDate(); //Day
+export const addMonths2Date = (date: Date, months: number = 1) => {
+  console.log('dates', date);
+
+  const d = date.getDate(); //日にち
   date.setMonth(date.getMonth() + +months);
   if (date.getDate() != d) {
     date.setDate(0); //前月末日に戻る
@@ -164,6 +181,46 @@ export const addMonths = (date: Date, months: number = 1) => {
   return date;
 };
 
+//---
+export const endOfMD = (
+  year3: number,
+  month3: number,
+  monthTerm: number = 0,
+) => {
+  const endOfMonthDay = (function (paraYear, paraMonth) {
+    const tempEndDate = new Date(paraYear, paraMonth, 0); //最終日
+    console.log(tempEndDate, paraYear, paraMonth);
+    return tempEndDate.getDate();
+  })(year3, month3 + monthTerm);
+  return endOfMonthDay;
+};
+
+//-----------------------------------------------------
+//日付にXヶ月を追加 第2引数の月を基本に第１引数の日にちを返す
+//addMonths2(31,new Date('2024/4/1'), 6).toLocaleDateString()//'2024/10/31'
+//addMonths2(31,new Date('2024/1/31'), 1).toLocaleDateString()//'2024/2/29'
+//addMonths2(20, new Date('2024/9/16'), 0).toLocaleDateString();//'2024/9/20'
+//-----------------------------------------------------
+export const addMonths2Date3 = (
+  days: number,
+  date: Date,
+  months: number = 0,
+) => {
+  const baseDate = new Date(date.getFullYear(), date.getMonth()); // 計算の基準
+  const dateOfThisMonth = new Date(baseDate);
+  dateOfThisMonth.setMonth(dateOfThisMonth.getMonth() + months);
+  const endOfThisMonth = new Date(
+    dateOfThisMonth.getFullYear(),
+    dateOfThisMonth.getMonth() + 1,
+    0,
+  ); // 今月の末日
+  dateOfThisMonth.setDate(Math.min(Math.abs(days), endOfThisMonth.getDate())); // 今月の〇日
+  // console.log(
+  //   baseDate.toLocaleDateString(),
+  //   dateOfThisMonth.toLocaleDateString(),
+  // );
+  return dateOfThisMonth;
+};
 console.log(
   'F',
   getDateWithString(
@@ -173,9 +230,11 @@ console.log(
     getAddMonthDate2(getDateWithString(new Date('2020/12/31')), 2) as Date,
   ),
 );
-console.log(getFirstLastDayOfMouth('2024/02/12'));
-console.log(addMonths(new Date('2024/1/31'), 1).toLocaleDateString());
-
-//console.log(getAddMonthDate2("2020/02/12", -2, false, false) );
+console.log('qq', getFirstLastDayOfMouth('2024/02/20')[0].toLocaleDateString());
+console.log(addMonths2Date(new Date('2024/2/29'), 0).toLocaleDateString());
+console.log(getAddMonthDate2('2024/02/29', -1, false));
+console.log(getAddMonthDate2('2024/03/30', 0, false));
 //console.log(getAddMonthDate3(2020, 2, 12, -1).toLocaleDateString());
 //console.log(getLastDate(new Date("2024/09/31")));
+//console.log(addMonths2Date3(20, new Date('2024/9/16'), 1).toLocaleDateString());
+console.log('endOfMD', endOfMD(2024, 2, 5));
