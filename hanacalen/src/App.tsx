@@ -16,12 +16,11 @@ import './App.css';
 // import.meta.env.BASE_URLで取得できる。
 const router = createBrowserRouter([
   {
-    path: import.meta.env.BASE_URL + 'honban', //build時にbaseの値
+    //path: import.meta.env.BASE_URL, //build時にbaseの値
     //vite-env.d.tsをsrcの中に置く
-    // path: 'honban', ////http://hostname/honban/...
+    //path: "/",//必ずルートから
     element: <Root />, //共通Page
     // errorElement:<div>404 NotFund</div>
-    // 存在しないページにアクセスした際に表示されるエラーページ
     errorElement: <NotFound />,
     children: [
       //Rootのoutlet 部分 独立

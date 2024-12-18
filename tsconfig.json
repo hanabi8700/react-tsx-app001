@@ -29,7 +29,7 @@
       "~/*": ["public/*"]
     }
   },
-  "include": ["honban/src"],
+  "include": ["src","honban/src"],
   "exclude": ["src2/sample*/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }],
   "ts-node": {

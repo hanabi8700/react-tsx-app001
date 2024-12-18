@@ -4,11 +4,22 @@
   // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+
     {
-      "type": "msedge",
+      //launch.json内からtask.jsonを実行し、
+      //Reactプロジェクトを起動後にアタッチするような感じ。
+      //launch.jsonを作る----------------------------
+      //request:デバッガに対する要求の種類
+      //name:デバッグ構成の名前
+      //url:アプリケーションの起動先URLをViteの待ち受けポートに合わせるのがキモです
+      //port:vite.config.ts内の ポート番号
+      //preLaunchTask:デバッグの前に実行されるタスクを指定できる
+      //preLaunchTask:tasks.jsonのlabelと一致させる必要がある
+      "type": "chrome",
       "request": "launch",
-      "name": "localhost に対して Edge を起動する デバッグ",
-      "url": "http://localhost:3000",
+      "name": "React localhost に対して デバッグ",
+      "preLaunchTask": "npm: dev",
+      "url": "http://localhost:5173",
       "webRoot": "${workspaceFolder}"
     }
   ]

@@ -10,21 +10,61 @@
       "command": "echo Hello"
     },
     {
-      "type": "npm", // npm によるタスク実行
-      "script": "dev", // 実行する npm スクリプト名
-      // "path": "react-tsx-app001",
+      // npm run dev (package.json:script_name)
+      //script:package.jsonの"scripts"で設定しているもの
+      //label:launch.jsonではこの値を見ている
+      //cwd:cwd コマンドを実行するディレクトリを指定{index.html}
+      //label:コマンドパレットに表示される名前
+      //label:launch.jsonではこの値を見ている
+      //detail: その下に表示される説明文
+      //isBackground:タスクがバックグラウンドで実行されるかどうかを設定
+      "type": "npm",
+      "script": "dev",
       "options": {
-        // cwd コマンドを実行するディレクトリを指定{index.html}
         "cwd": "${workspaceFolder}"
-        // env	環境変数を指定
+      },
+      "label": "npm: dev",
+      "detail": "vite Task",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": "ˆ$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^Compiling...",
+          "endsPattern": "^Compiled successfully."
+        }
+      }
+    },
+    {
+      //nmp run build
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build",
+      "detail": "tsc && vite build"
+    },
+    {
+      //nmp run init:fix
+      "type": "npm",
+      "script": "lint:fix",
+      "problemMatcher": [],
+      "label": "npm: lint:fix",
+      "detail": "eslint src --fix"
+    },
+    {
+      //nmp run preview /cgi-bin/hanareact/js/honban
+      "type": "npm",
+      "script": "preview",
+      "options": {
+        "cwd": "${workspaceFolder}"
       },
       "problemMatcher": [],
-      "label": "npm: dev - react-tsx-app001", // コマンドパレットに表示される名前
-      "detail": "vite", // その下に表示される説明文
-      "group": {
-        "kind": "build", // ビルドタスクとして認識させる
-        "isDefault": true // Cmd + Shift + B で即実行
-      }
+      "label": "npm: preview",
+      "detail": "vite preview"
     }
   ]
 }
