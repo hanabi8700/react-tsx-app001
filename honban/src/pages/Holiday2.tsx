@@ -9,10 +9,12 @@ export type Result1 = {
   date: Date[];
   data010: number;
 };
-
+interface obj1 {
+  [prop: string]: any;
+}
 const debug9 = false;
 //-----------------------------------------------------
-//  祝日計算
+// 祝日計算（国民の休日、振替休日、特別記念日、イベント情報）
 //-----------------------------------------------------
 //
 //
@@ -37,7 +39,7 @@ export const Holiday2 = (
   //   holiday: true,   boolean--->祝日判断
   //   order: 1101,     number---->30xx,40xx,3400,3405
   //   type: 'holiday', string
-  //   option: 0,       number
+  //   option: 0,       number---->回数xxxnn
   //   duration: 4,     number
   //   backgroundColor: 'None', string-->バックグラウンド
   // },
@@ -65,12 +67,14 @@ export const Holiday2 = (
         );
         debug9 && console.log('F300', data, result);
         const holi = data[14][2] === '1' ? true : false;
-
+        const [num9, year9, month] = calc.getNamYearMonth(data[11]);
         result.date.forEach((date, index) => {
           result2.push({
             date: calc.getDateWithString(date),
             name: data[13],
-            option: result.data010 * 100 + index,
+            option: num9
+              ? result.data010 * 100 + index
+              : result.data010 + index * 100,
             order: result.type * 10, //(3xx)
             type: 'Holiday',
             holiday: holi,
@@ -110,12 +114,28 @@ export const Holiday2 = (
   const result4 = kokuminHoliday(result2, result3); //order:3405
   const holidayArray = result2.concat(result3, result4); //配列結合シャローコピー
 
+  //result2:成人の日から大晦日,result3:振替休日,result4:国民の休日
   debug9 && console.log('解析結果2', result2); //order:3xxx,4xxx
   debug9 && console.log('解析振替3', result3);
   debug9 && console.log('解析国民4', result4);
 
+  holidayArray.filter((v) => {
+    console.log(v.name, v.date, v.option);
+    // const sing = /%-N/.test(v.name);
+    const aa = v.date.split('/');
+    const opt1: obj1 = {};
+    opt1['Y'] = aa[0];
+    opt1['M'] = aa[1];
+    opt1['N'] = v.option % 100;
+    opt1['-N'] = (v.option % 100) + 1;
+    const name2 = replaceMMM(v.name, opt1);
+    //console.log(name2);
+    v.name = name2;
+  });
+
   return holidayArray;
 };
+
 //---------------------------
 //施工年終了年除外年チェック
 //---------------------------
@@ -260,6 +280,40 @@ const getSpringAtumday = (resultYear: number) => {
   return resultObj;
 };
 
+//-----------------------------------------------------
+// 置き換え 文字列 %M,%N,%Y
+// text : "TS3締日%M月分"(ソース)
+// opt1 : {M:"3",Y:"2024",N:"1"}(置き換え文字列)
+// regexx : /%([+-]?)([0-9]?)[YMN]/g (省略時デホルト)
+//-----------------------------------------------------
+//
+const replaceMMM = (
+  text: string,
+  opt1: obj1,
+  regexx = /%([+-]?)([0-9]?)[YMN]/g,
+) => {
+  const target = text.match(regexx);
+  //(2) ['%-M', '%M']
+  if (target) {
+    target.filter((v) => {
+      const endChar = v.substring(v.length - 1);
+      const singe = v.substring(v.indexOf('%') + 1, v.indexOf(endChar));
+      const vv = singe === '-' || singe === '+' ? singe + '1' : singe;
+      const result2 = Number.isNaN(Number(vv)) ? 0 : Number(vv);
+      //Number.isNaN():数値でないものはすべて false を返します
+      let num9 = Number(opt1[endChar]) + result2;
+      //if (singe === '-' || singe === '+') {
+      if (result2 == -1 && opt1[singe + endChar]) {
+        num9 = Number(opt1[singe + endChar]);
+      }
+      text = text.replace(v, String(num9));
+      //console.log('re', result2, '(', vv, ',', singe, ')', endChar);
+    });
+  }
+  return text;
+};
+
+//
 // 形式：
 // #'''
 // #月極固定項目（記念日など）の設定

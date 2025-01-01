@@ -57,7 +57,8 @@ export const ServerAccess = (
   //通信OK？
   //********** */
   if (dataObj2.data) {
-    //祝日設定された情報など取得
+    //祝日設定された情報取得した後の祝日など計算
+    // 5, 5, 12, こどもの日, 301;
     const specialHolidayTxt = decodeShiftJis(dataObj2.data);
     const result4: HolidayList[] = Holiday2(
       specialHolidayTxt,
@@ -70,6 +71,9 @@ export const ServerAccess = (
   }
   if (dataObj3.data) {
     // 特別記念日
+    // 1,200306,,結婚記念日(%N周年),300,1
+    // 31,1006,1,国民健康保険料(第%-N/10期),310,3
+    // 6,200605,1,電気代振込%-1M月分,310
     const specialHolidayTxt3 = decodeShiftJis(dataObj3.data);
     const resultObj3: string[] = calc.stringToObjectArray(
       specialHolidayTxt3,

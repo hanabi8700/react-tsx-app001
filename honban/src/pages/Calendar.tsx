@@ -197,6 +197,13 @@ export const Calendar = () => {
   }
   //-----------------------------------------------------
   // サーバーへアクセス Get
+  // calendarDates:カレンダーに関する日付群（月初、月末など）
+  // calendarDateStr:カレンダー表示日付
+  // lastDateDay:カレンダー表示最終日
+  // holidayArray:ホリデイ祝日、六曜、特別記念日など取得
+  //---
+  // Return: stockedDays, dataEvent, holidayArray2
+  // Stock:ストックID番号, Event:イベント情報, Holiday:祝日休日など
   //-----------------------------------------------------
   const [stockedDays, dataEvent, holidayArray2] = ServerAccess(
     calendarDates,
@@ -206,7 +213,7 @@ export const Calendar = () => {
   );
   holidayArray = holidayArray2;
   debug9 && console.log('---------------------------------');
-  // -----------------------------Display-Calendar-------------------------------------
+  // -----------------------------Display-Calendar-----------------------------
   return (
     <>
       {/* //-------------ヘッダー----------------- */}

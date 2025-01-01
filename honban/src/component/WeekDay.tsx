@@ -17,7 +17,7 @@ interface Props {
 //ctDate,カレンダーの日曜日から始まる日付
 //weekNumber,カレンダーの週間番号（0,1,...7）
 //holidayArray,六曜、祝祭日のデーター
-//dataEvent,ダウンロードしたデーター
+//dataEvent,ダウンロードしたイベントデーター
 //-----------------------------------------------------
 ////六曜（ろくよう、りくよう）dataset 1Day  (order:10=>29)
 ////祝日 dataset 1Day (order:=>999)
@@ -53,7 +53,7 @@ export default function WeekDay({
           dataEvent={dataEvent} //イベントデーター
           dataHoliday={holidayArray} //祝祭日
           stockedDays={stockedDays} //枠内並び
-          rowMax={5}
+          rowMax={5} //最大項目数（行数）
         ></WeekEvent2>
       </div>
     </div>

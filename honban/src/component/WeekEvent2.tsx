@@ -22,7 +22,7 @@ interface EventType2 extends EventType {
 interface HolidayList2 extends HolidayList {
   title?: string;
 }
-const debug9 = false;
+const debug9 = true;
 
 // 1 ~ 9 までの乱数を生成関数
 // const numRandom = () => Math.floor(Math.random() * 1000) + 1;
@@ -80,8 +80,8 @@ const weekEvent = (
   count = 1, //行数
 ) => {
   const weekdayArray = calc.getWeekDay7(ctDate, weeksNum); //oneWeek
-  //同じ日付ごとをstockedDays[月]を基に配列（週間）に集める
   const [oneWeekData, oneWeekDataStack] = WeekEvent3(weekdayArray, stockedDays);
+  //同じ日付ごとをstockedDays[月]を基に配列（週間）に集める
   //oneWeekData=[[日],[月],[火],[水],[木],[金],[土]]
   //=[Array(2), Array(0), Array(0), Array(1), Array(2), Array(1), Array(0)]
   //=[[日1,...日n],[月1,...月n],...[土1,...土n]]
@@ -94,7 +94,7 @@ const weekEvent = (
   for (let i = 0; i < count; i++) {
     //count Max行数By週間
     let output3: JSX.Element[] = [];
-    //日[縦枠]ごとにを週間[横枠]ごとに
+    //日[縦枠]ごとにを週間[横枠]ごとに変更すること
     const oneRowData: number[] = calc.getRow2DimArray(oneWeekData, i);
     const oneRowDataStack: number[] = calc.getRow2DimArray(oneWeekDataStack, i);
     //１行分aa=[日i,月i,火i,水i,木i,金i,土i]*count
@@ -108,6 +108,9 @@ const weekEvent = (
       // debug9 && console.log('index:', weekdayArray[index].date, aa3);
       return aa3;
     });
+    //%[+-]M....AEON支払日%M月分..Date.month
+    //%[+-]N...."国民健康保険料(第%-N/10期)"..option1xx,2xx
+    //-Nは+N:109=>110,-Nはそのまま205=>204,%N=>6700,%-Nは+N=>1500
     const aa1: (EventType2 | HolidayList2)[] = calc.deepCloneObj(aa);
     //------------------------------------------------------------------
     //週間[横枠]ごとにしたデーターに色を付けるUndefinedにも表示するように変換する
@@ -123,11 +126,11 @@ const weekEvent = (
           date: weekdayArray[index].date,
         };
       }
-      //----------第一日目のみその他はundefined------------------
+      //----------第一日目のみその他はundefined--- aa[]! はnull拒否 ----------
       d.duration = d.duration ? d.duration : 1;
       let aduration = 1;
       if (aa[index] !== undefined) {
-        aduration = aa[index]!.duration ? aa[index]!.duration as number : 1;
+        aduration = aa[index]!.duration ? (aa[index]!.duration as number) : 1;
       }
 
       if (index === 0 && d.date && d.date !== weekdayArray[index].date) {
@@ -190,6 +193,7 @@ type Props = {
 //WeekEvent処理
 //dataEvent,ダウンロードしたデーター
 //calendarDates,カレンダーの日曜日から始まる日付
+//dataHoliday,六曜、祝祭日のデーター
 //weekNumber,カレンダーの週間番号（0,1,...7）
 //RowMax,最大行数
 //行➔横並びのデータRow
