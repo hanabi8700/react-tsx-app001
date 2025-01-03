@@ -7,7 +7,9 @@
 // 毎年1月2日から2日間
 // 202, 1, 0, 正月, 302, 1;
 // 毎年6月13日 2015年から数えて
-// 13,201506,,プリン誕生日(%N),300,1
+// 13,201506,,プリン誕生日(%N),300,120,200601,1,AEONリボ変更締日,300,4
+// 24,201808,1,TS3ROOMYリボ変更締日,300,4
+// 17,202004,1,LINECardリボ変更締日,300,4
 
 import * as CallLib from './CalenderLib';
 import { Result1 } from '@/pages/Holiday2';
@@ -29,9 +31,13 @@ export const CalledCalc300 = (
   flag: boolean = false, //月末:True or Auto 31:True
   endOfDurationDate: string = '', //年末 and flag=true
 ) => {
-  // const lastDate = JSON.parse(JSON.stringify(calendarDate));
+  //
   const lastDate = structuredClone(calendarDate);
   const [num9, year9, month] = CallLib.getNamYearMonth(cCounts);
+  // 1カ月ごと、始まり年以上、繰り返し１回以下の場合1月からに変更する
+  const month99 =
+    monthly === 1 && lastDate.getFullYear() > year9 && num9 <= 1 ? 1 : month;
+  //
   cDayDate = Number(String(cDayDate).replace(/[^\d]/g, '')); //数字のみ
   let repeat = parseInt(String(cDayDate / 100)); //繰り返し回数
   cDayDate = cDayDate % 100; //日にち
@@ -41,7 +47,7 @@ export const CalledCalc300 = (
     }
     flag = true; //月末(cDayDate=31を指定したとき)
   }
-  lastDate.setMonth(month - 1, Number(cDayDate)); //任意
+  lastDate.setMonth(month99 - 1, Number(cDayDate)); //任意
   const date31 = CallLib.stringToDate(lastDate.toString());
   year9 != 0 ? date31.setFullYear(year9) : '';
   const strDate31 = date31.toString();
@@ -54,9 +60,15 @@ export const CalledCalc300 = (
   };
 
   //----------------------
-  monthly = monthly ? monthly : 12; //monthly==0,12
+  monthly = monthly ? monthly : 12; //monthly==0:->12
   repeat = repeat <= 0 ? 1 : repeat;
-  const num99 = monthly == 12 ? num9 : 12;
+
+  debug9 && console.log('F300Start----------');
+  debug9 && console.log('result_YNMm9', year9, num9, month, '月', month99);
+  //31,1006,1,国民健康保険料(第%-N/10期),310,3 :result_YNM9_Mly 0 10 6 _ 1
+  const num99 = year9 === 0 && num9 === 1 && monthly !== 12 ? 12/monthly : num9;
+  debug9 && console.log('monthly,num99', monthly, 'カ月', num99, '回数');
+
   //15,11,,七五三,300,1
   //5,1,2,NHK支払(%-M-%M月分),310,3
   //F304--------------202, 1, 0, 正月, 302, 1;
@@ -79,23 +91,28 @@ export const CalledCalc300 = (
           result,
         );
     } else {
-      //F302-------------------
+      //F302----num99回繰り返す:data010は年越え有回数
+      //20,200601,1,AEONリボ変更締日,300,4
+      // 5,1,2,NHK支払(%-M-%M月分),310,3 :num0->12,monthly2
+      // 31,405,2,固定資産税(第%-N/4期),310,3 :num4,monthly2
+      // 31,1006,1,国民健康保険料(第%-N/10期),310,3 :num10,monthly1
       result = callCalc302(
         num99,
         monthly,
         flag, //true:月末(cDayDate=31を指定したとき)
-        getAddDayDate(lastDate, 0),
-        endOfDurationDate,
+        getAddDayDate(lastDate, 0), //日付DeepCopy
       ); //年数計算[年越え]
     }
   }
+  debug9 && console.log('F300_result', result);
   return result;
 };
 
 //-----------------------
-//回数、年月で日付[]を返す
+//strDate1 からN回数、Mか月ごとで日付date[]を返す
 //callCalc301(5,"2024/9/10",2)//9/10から2か月ごと５回の日付[]を返す
 //callCalc301(5,"2024/9/10",2,true)//9/末日から2か月ごと５回の日付[]を返す
+// array[2024/9/x,2024/11/x,2025/01/x,2025/03/x,2025/05/x]
 //-----------------------
 const callCalc301 = (
   cCounts: string | number,
@@ -124,29 +141,47 @@ const callCalc301 = (
 };
 
 //------------------------------------------
+// 31,405,2,固定資産税(第%-N/4期),310,3 :num4,monthly2
 // 31,1006,1,国民健康保険料(第%-N/10期),310,3
+// 20,200601,1,AEONリボ変更締日,300,4
 //------------------------------------------
 const callCalc302 = (
   num9: number, //1006=>10回
   monthly: number, //1カ月
   flag: boolean,
   lastDate: Date = new Date(),
-  yearAdd: string = '0',
 ) => {
   const result: Result1 = {
     type: 302,
     date: [],
     data010: 0,
   };
-  num9 = num9 < 1 ? 12 : num9;
-  const yearDifference = lastDate.getFullYear() + Number(yearAdd);
-  // Number(yearAdd == '' ? 0 : yearAdd);
-  const dateDifference = new Date(lastDate.setFullYear(yearDifference));
-  const strDate31 = dateDifference.toString();
-  //strDate31:"Sun Jun 30 2024 17:17:18 GMT+0900 (日本標準時)"
-  result.date = callCalc301(num9, strDate31, monthly, flag);
-  //回数、年月で日付[]を返す
-  //年数計算[年越えあるか]data010
+  //年超えCheck yy
+  const checkOverYear =
+    getAddDayDate(
+      lastDate,
+      0,
+      monthly === 12 ? 0 : monthly * num9 - 1,
+    ).getFullYear() - lastDate.getFullYear();
+  //
+  num9 = num9 < 1 ? 12 : num9; //num9<1:->12回
+  debug9 &&
+    console.log('F302_', monthly, 'kagrtu', num9, 'kai', checkOverYear, 'CKO');
+  const yearDiffOrigin = lastDate.getFullYear();
+  //-----------繰り返し（前年＋今年）-----------------------------
+  for (let i = checkOverYear > 0 ? -1 : 0; i < 1; i++) {
+    const yearDifference = yearDiffOrigin + i;
+    const dateDifference = new Date(lastDate.setFullYear(yearDifference));
+    const strDate31 = dateDifference.toString();
+    //strDate31:"Sun Jun 30 2024 17:17:18 GMT+0900 (日本標準時)"
+    //strDate31 からN回数、Mか月ごとで日付[]を返す
+    // result.date = callCalc301(num9, strDate31, monthly, flag);
+    result.date = result.date.concat(
+      callCalc301(num9, strDate31, monthly, flag),
+    );
+  }
+  //---------------------------------------------------------------
+  //年数計算[年越えあるか]data010=Array[last]-Array[0]
   result.data010 =
     result.date.slice(-1)[0].getFullYear() - result.date[0].getFullYear();
   return result;

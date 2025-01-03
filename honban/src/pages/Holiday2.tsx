@@ -13,6 +13,7 @@ interface obj1 {
   [prop: string]: any;
 }
 const debug9 = false;
+const debug8 = true;
 //-----------------------------------------------------
 // 祝日計算（国民の休日、振替休日、特別記念日、イベント情報）
 //-----------------------------------------------------
@@ -46,6 +47,8 @@ export const Holiday2 = (
 
   for (let i = 0; i < resultObj.length; i++) {
     const data = resultObj[i];
+    debug8 && console.log('data', data, i);
+
     //施工年チェック
     const status = checkStartEndYear(data, resultYear);
     if (status) {
@@ -65,16 +68,19 @@ export const Holiday2 = (
           Number(data[12]), //か月毎
           calendarDate,
         );
+        //result.type == 302 && data010>=1は年越えの回数あり
         debug9 && console.log('F300', data, result);
         const holi = data[14][2] === '1' ? true : false;
-        const [num9, year9, month] = calc.getNamYearMonth(data[11]);
+        // const [num9, year9, month] = calc.getNamYearMonth(data[11]);
+        const array1 = calc.getNamYearMonth(data[11]);
         result.date.forEach((date, index) => {
           result2.push({
             date: calc.getDateWithString(date),
             name: data[13],
-            option: num9
-              ? result.data010 * 100 + index
-              : result.data010 + index * 100,
+            option:
+              array1[0] || result.type == 302
+                ? result.data010 * 100 + index
+                : result.data010 + index * 100,
             order: result.type * 10, //(3xx)
             type: 'Holiday',
             holiday: holi,
@@ -119,8 +125,9 @@ export const Holiday2 = (
   debug9 && console.log('解析振替3', result3);
   debug9 && console.log('解析国民4', result4);
 
+  // %Y%M%Nの変換
   holidayArray.filter((v) => {
-    console.log(v.name, v.date, v.option);
+    debug8 && console.log(v.name, v.date, v.option);
     // const sing = /%-N/.test(v.name);
     const aa = v.date.split('/');
     const opt1: obj1 = {};
@@ -131,6 +138,7 @@ export const Holiday2 = (
     const name2 = replaceMMM(v.name, opt1);
     //console.log(name2);
     v.name = name2;
+    debug8 && console.log('replaceMMM', name2);
   });
 
   return holidayArray;

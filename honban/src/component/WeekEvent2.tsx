@@ -22,7 +22,7 @@ interface EventType2 extends EventType {
 interface HolidayList2 extends HolidayList {
   title?: string;
 }
-const debug9 = true;
+const debug9 = false;
 
 // 1 ~ 9 までの乱数を生成関数
 // const numRandom = () => Math.floor(Math.random() * 1000) + 1;

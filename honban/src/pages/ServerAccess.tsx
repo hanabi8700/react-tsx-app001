@@ -57,7 +57,7 @@ export const ServerAccess = (
   //通信OK？
   //********** */
   if (dataObj2.data) {
-    //祝日設定された情報取得した後の祝日など計算
+    //祝日設定された情報取得した後の祝日など計算....解析(%M,%Y,%N)
     // 5, 5, 12, こどもの日, 301;
     const specialHolidayTxt = decodeShiftJis(dataObj2.data);
     const result4: HolidayList[] = Holiday2(
@@ -82,8 +82,10 @@ export const ServerAccess = (
     // console.log('DATA3', specialHolidayTxt3);
     // console.log('resultObj3:', resultObj3);
     //'resultObj3:'[{…}, {…}, {…}, {…}, {…}, {…}]
-    //特別記念日など取得
+    //特別記念日など取得....解析(%M,%Y,%N)
     const result5 = BirthDay(resultObj3, calendarDateStr);
+    debug8 && console.log('result5_BirSource', resultObj3);
+    debug8 && console.log('result5_BirthDay', result5);
     holidayArray = holidayArray.concat(result5); //配列結合シャローコピー
   }
   for (const element of holidayArray) {

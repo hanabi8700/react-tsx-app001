@@ -92,8 +92,8 @@ const useCounter = (initialValue = 0) => {
 //-----------------------------------------------------
 // カレンダー本体
 //-----------------------------------------------------
-const debug8 = true;
-const debug9 = true;
+const debug8 = false;
+const debug9 = false;
 export const Calendar = () => {
   debug9 && console.log('Calendar');
   const {
