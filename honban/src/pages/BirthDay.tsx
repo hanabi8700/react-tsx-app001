@@ -7,7 +7,7 @@ import { Holiday2 } from './Holiday2';
 // 項目Get:monthlyitem
 //-----------------------------------------------------
 //
-const debug9 = true;
+const debug9 = false;
 
 export const BirthDay = (specialStr: string[], calendarDateStr: string) => {
   const dd = specialStr.find((dataObj) => dataObj[23] === 'monthlyitem');

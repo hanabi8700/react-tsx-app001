@@ -13,7 +13,7 @@ interface obj1 {
   [prop: string]: any;
 }
 const debug9 = false;
-const debug8 = true;
+const debug8 = false;
 //-----------------------------------------------------
 // 祝日計算（国民の休日、振替休日、特別記念日、イベント情報）
 //-----------------------------------------------------
@@ -61,6 +61,7 @@ export const Holiday2 = (
       if (data[14][0] === '3') {
         // #拡張形式１（日,始年月,加算月,拡張内容,休平日+300+振替コード,種別色,終年,除外年01,除外年02,除外年03,）
         // 15,194801,12,成人の日,301,0,1999
+        // 31,1006,1,国民健康保険料(第%-N/10期),310,3
         // debug9 && console.log('F300:', data[13]);
         const result = CalledCalc300(
           data[10], //日にち
@@ -79,7 +80,7 @@ export const Holiday2 = (
             name: data[13],
             option:
               array1[0] || result.type == 302
-                ? result.data010 * 100 + index
+                ? result.data010 * 100 + (index % (array1[0] ? array1[0] : 100))
                 : result.data010 + index * 100,
             order: result.type * 10, //(3xx)
             type: 'Holiday',
@@ -129,13 +130,14 @@ export const Holiday2 = (
   holidayArray.filter((v) => {
     debug8 && console.log(v.name, v.date, v.option);
     // const sing = /%-N/.test(v.name);
-    const aa = v.date.split('/');
+    const aa = v.date.split('/');//2024/01/20
     const opt1: obj1 = {};
     opt1['Y'] = aa[0];
     opt1['M'] = aa[1];
+    opt1['-M'] = Number(aa[1]) - 1 === 0 ? 12 : Number(aa[1]) - 1;
     opt1['N'] = v.option % 100;
     opt1['-N'] = (v.option % 100) + 1;
-    const name2 = replaceMMM(v.name, opt1);
+    const name2 = calc.replaceMMM(v.name, opt1);
     //console.log(name2);
     v.name = name2;
     debug8 && console.log('replaceMMM', name2);
@@ -286,39 +288,6 @@ const getSpringAtumday = (resultYear: number) => {
   const resultObj = calc.stringToObjectArray(text1);
   // console.log(dtNum, resultObj);
   return resultObj;
-};
-
-//-----------------------------------------------------
-// 置き換え 文字列 %M,%N,%Y
-// text : "TS3締日%M月分"(ソース)
-// opt1 : {M:"3",Y:"2024",N:"1"}(置き換え文字列)
-// regexx : /%([+-]?)([0-9]?)[YMN]/g (省略時デホルト)
-//-----------------------------------------------------
-//
-const replaceMMM = (
-  text: string,
-  opt1: obj1,
-  regexx = /%([+-]?)([0-9]?)[YMN]/g,
-) => {
-  const target = text.match(regexx);
-  //(2) ['%-M', '%M']
-  if (target) {
-    target.filter((v) => {
-      const endChar = v.substring(v.length - 1);
-      const singe = v.substring(v.indexOf('%') + 1, v.indexOf(endChar));
-      const vv = singe === '-' || singe === '+' ? singe + '1' : singe;
-      const result2 = Number.isNaN(Number(vv)) ? 0 : Number(vv);
-      //Number.isNaN():数値でないものはすべて false を返します
-      let num9 = Number(opt1[endChar]) + result2;
-      //if (singe === '-' || singe === '+') {
-      if (result2 == -1 && opt1[singe + endChar]) {
-        num9 = Number(opt1[singe + endChar]);
-      }
-      text = text.replace(v, String(num9));
-      //console.log('re', result2, '(', vv, ',', singe, ')', endChar);
-    });
-  }
-  return text;
 };
 
 //

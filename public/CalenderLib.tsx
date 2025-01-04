@@ -673,6 +673,54 @@ export const getNamYearMonth = (cCounts: number | string = 1) => {
   return [num9, year9, month];
 };
 
+//----呼び出し方法------------------------------------
+//     const aa = v.date.split('/');//2024/01/20
+//     const opt1: obj1 = {};
+//     opt1['Y'] = aa[0];
+//     opt1['M'] = aa[1];
+//     opt1['-M'] = Number(aa[1]) - 1 === 0 ? 12 : Number(aa[1]) - 1;
+//     opt1['N'] = v.option % 100;
+//     opt1['-N'] = (v.option % 100) + 1;
+//     const name2 = replaceMMM(v.name, opt1);
+//     //console.log(name2);
+//     v.name = name2;
+//-----------------------------------------------------
+// 置き換え 文字列 %M,%N,%Y
+// text : "TS3締日%M月分"(ソース)
+// opt1 : {M:"3",Y:"2024",N:"1"}(置き換え文字列)
+// regexx : /%([+-]?)([0-9]?)[YMN]/g (省略時デホルト)
+//-----------------------------------------------------
+//
+interface obj1 {
+  [prop: string]: any;
+}
+export const replaceMMM = (
+  text: string,
+  opt1: obj1,
+  regexx = /%([+-]?)([0-9]?)[YMN]/g,
+) => {
+  const target = text.match(regexx);
+  //(2) ['%-M', '%M']
+  if (target) {
+    target.filter((v) => {
+      const endChar = v.substring(v.length - 1);
+      const singe = v.substring(v.indexOf('%') + 1, v.indexOf(endChar));
+      const vv = singe === '-' || singe === '+' ? singe + '1' : singe;
+      const result2 = Number.isNaN(Number(vv)) ? 0 : Number(vv);
+      //Number.isNaN():数値でないものはすべて false を返します
+      let num9 = Number(opt1[endChar]) + result2;
+      //if (singe === '-' || singe === '+') {
+      if (result2 == -1 && opt1[singe + endChar]) {
+        num9 = Number(opt1[singe + endChar]);
+      }
+      text = text.replace(v, String(num9));
+      //console.log('re', result2, '(', vv, ',', singe, ')', endChar);
+    });
+  }
+  return text;
+}
+
+
 //--------------------------------------
 //協定世界時のシリアル値：ExcelTimeUTC ＝ UnixTime / 86400 + 25569
 //日本標準時のシリアル値：ExcelTimeJST ＝ (UnixTime + 32400) / 86400 + 25569
