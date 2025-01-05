@@ -53,6 +53,7 @@ export const Holiday2 = (
     const status = checkStartEndYear(data, resultYear);
     if (status) {
       //終年or除外年
+      debug8 && console.log('終年or除外年');
     } else if (
       data[10][0] !== undefined &&
       data[10][0] !== '#' &&
@@ -130,7 +131,7 @@ export const Holiday2 = (
   holidayArray.filter((v) => {
     debug8 && console.log(v.name, v.date, v.option);
     // const sing = /%-N/.test(v.name);
-    const aa = v.date.split('/');//2024/01/20
+    const aa = v.date.split('/'); //2024/01/20
     const opt1: obj1 = {};
     opt1['Y'] = aa[0];
     opt1['M'] = aa[1];
@@ -155,7 +156,7 @@ const checkStartEndYear = (
 ) => {
   //始年月
   const [num9, year9, month] = calc.getNamYearMonth(data[11]);
-  debug9 &&
+  (debug9 || debug8) &&
     console.log('getNamYearMonth', data[11], data[13], num9, year9, month);
   const stat3 = Number(year9 ? year9 : 0) > resultYear;
   //終年
@@ -165,7 +166,8 @@ const checkStartEndYear = (
     stat2 = Number(data[j] ? data[j] : 9999) === resultYear;
     if (stat2) break; //除外年;
   }
-  debug9 && console.log('stat:', resultYear, data[16], stat1, stat2, stat3);
+  (debug9 || debug8) &&
+    console.log('stat:', resultYear, data[16], stat1, stat2, stat3);
   const status = stat1 || stat2 || stat3;
   return status;
 };

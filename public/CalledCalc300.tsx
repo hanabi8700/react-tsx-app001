@@ -63,10 +63,11 @@ export const CalledCalc300 = (
   monthly = monthly ? monthly : 12; //monthly==0:->12
   repeat = repeat <= 0 ? 1 : repeat;
 
-  debug9 && console.log('F300Start----------');
+  debug9 && console.log('F300Start----------', lastDate.toLocaleDateString());
   debug9 && console.log('result_YNMm9', year9, num9, month, '月', month99);
   //31,1006,1,国民健康保険料(第%-N/10期),310,3 :result_YNM9_Mly 0 10 6 _ 1
-  const num99 = year9 === 0 && num9 === 1 && monthly !== 12 ? 12/monthly : num9;
+  const num99 =
+    year9 === 0 && num9 === 1 && monthly !== 12 ? 12 / monthly : num9;
   debug9 && console.log('monthly,num99', monthly, 'カ月', num99, '回数');
 
   //15,11,,七五三,300,1
