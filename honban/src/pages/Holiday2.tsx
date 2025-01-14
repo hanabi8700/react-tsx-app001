@@ -17,19 +17,21 @@ const debug8 = false;
 //-----------------------------------------------------
 // 祝日計算（国民の休日、振替休日、特別記念日、イベント情報）
 //-----------------------------------------------------
-//
-//
+// specialHolidayTxt:"11,200605,,創立記念日(%N周年),300,1,2022"など
+// calendarDateStr:"2025/01/10"
+// dSAinFlag:default=false:春秋分の日は取り込まい
+// ------------------------------------
 export const Holiday2 = (
   specialHolidayTxt: string,
   calendarDateStr: string,
-  dSAinFlag = false, //春秋分の日
+  dSAinFlag = false, //春秋分の日取り込まい
 ): HolidayList[] => {
   const calendarDate = calc.initDate(calendarDateStr); //1日
   const resultYear = calendarDate.getFullYear();
   debug9 && console.log('カレンダー:', calendarDate.toLocaleDateString());
 
   const result2: HolidayList[] = [];
-  // 文字列形式で取得するので改行文字で区切って配列に変換
+  // 文字列形式で取得するので改行文字で区切って 配列[10]から始まるに変換
   let resultObj = calc.stringToObjectArray(specialHolidayTxt);
   const dSA = getSpringAtumday(resultYear); //春分の日3月、秋分の日9月
   resultObj = dSAinFlag ? resultObj.concat(dSA) : resultObj; //結合
@@ -114,6 +116,10 @@ export const Holiday2 = (
             backgroundColor: 'None',
           });
         });
+      }
+      // -----------------------------------------
+      if (data[14][1] === '1') {
+        //
       }
     }
   }

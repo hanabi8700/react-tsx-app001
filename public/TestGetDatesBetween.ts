@@ -77,8 +77,8 @@ export const getDatesBetween = (startDate: Date, endDate: Date): Date[] => {
   }
   return dates;
 };
-//-----------------------------------------------------
-const date = stringToDate("2024/9/1");
+//--*************************************************
+const date = stringToDate("2025/1/1");
 const currentMonth = date.getMonth();
 const currentYear = date.getFullYear();
 const firstDate2= new Date(currentYear, currentMonth, 1)

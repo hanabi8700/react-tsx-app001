@@ -93,7 +93,7 @@ export const ServerAccess = (
     //element.order = element.order ? element.order : 1101;
     //element.date = calc.getDateWithString(new Date(element.start as string));
   }
-  calc.dateSort(holidayArray, ['date', 'order']);//Sort
+  calc.dateSort(holidayArray, ['date', 'order']); //Sort
   stockedDays = CalenderStack(holidayArray, stockedDays, true, true); //初期化伴う
   ///////////////////////////////////////////////
   //------------------------
@@ -112,7 +112,7 @@ export const ServerAccess = (
   let dataEvent = [];
   if (dataObj.data) {
     //ダウンロードしたデーター
-    dataEvent = calc.deepCloneObj(dataObj.data);//DeepCopy
+    dataEvent = calc.deepCloneObj(dataObj.data); //DeepCopy
     for (const element of dataEvent) {
       element.id = numRandom(); //ID設定
       element.order = element.order ? element.order : 1101;
@@ -131,7 +131,7 @@ export const ServerAccess = (
     stockedDays = CalenderStack(dataEvent, stockedDays); //並び替え
   }
   //該当クリック日付枠のイベントを検索
-  calc.dateSort(stockedDays, ['date']);//Sort
+  calc.dateSort(stockedDays, ['date']); //Sort
   debug8 && console.log('Calendar-stockedDays:', stockedDays);
   debug8 && console.log('Calendar-holidayArray:', holidayArray);
   debug8 && console.log('Calendar-dataEvent:', dataEvent);
@@ -143,7 +143,7 @@ export const ServerAccess = (
 //------------------------
 const toServerDataGET = (url: string, option = {}) => {
   // const url = `${endpointUrl}?start=${startDateStr}&end=${endDateStr}`;
-  debug9 && console.log('dataGet', url);
+  (debug9 || debug8) && console.log('*****dataGet*****', url);
   const dataObj = EventDataGet(url, option);
   // const dataObj2 = useCallback(
   //   (dataObj = EventDataGet(endpointUrl, startDateStr, endDateStr)),
