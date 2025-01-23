@@ -8,6 +8,7 @@ import Rokuyo, { HolidayList } from './Rokuyo';
 import Holiday from './Holiday';
 import WeekDay from '../component/WeekDay';
 import { ServerAccess } from './ServerAccess';
+import { CalledFurike100 } from '~/CalledFurike100';
 
 // export const fetchUrlArray = () => {
 //   const url = [
@@ -212,6 +213,10 @@ export const Calendar = () => {
     holidayArray,
   );
   holidayArray = holidayArray2;
+  // 3N0or4N0 の振替コード処理
+  const result5 = CalledFurike100(holidayArray);
+  //
+
   debug9 && console.log('---------------------------------');
   // -----------------------------Display-Calendar-----------------------------
   return (

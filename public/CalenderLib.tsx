@@ -199,21 +199,24 @@ export const sprinAutomDay = (year: number = 2024) => {
 };
 
 //------------------------------------------------------------
-// 年月の指定した曜日の日付を取得する関数
+// 指定年月の第○番目の○曜日の日付を返します。関数 getNthWeekday
+// 曜日を0（日曜）から6（土曜）の数値で指定します。
+// 週番号（第○週目）を指定します。1からN
+// 日付文字列"2025/01/06"
 // 1月第2月曜日の日付を取得する場合は、
 // 第一引数に1（月曜日）、第二引数に2（第2）を指定します[第2月曜日]
 // const res1 = getSpecificDayDate(1, 2, '2024/01/01');
 // console.log(res1.toLocaleDateString())  //2024/01/8
 //------------------------------------------------------------
 export const getSpecificDayDate = (
-  tDay: number, //祝日の曜日コード
+  tDay: number, //曜日コード0-6
   sWeek: number = 1, //週番号
   dateString1: string = '',
 ) => {
   const date1 = stringToDate(dateString1);
   date1.setDate(1); //1日
   const day1 = date1.getDay(); //1日の曜日
-  //1月第2月曜日=(祝日の週番号)*7 + (7+祝日の曜日コード - 月初の曜日コード) % 7 - 6
+  //1月第2月曜日=(週番号)*7 + (7+曜日コード - 月初の曜日コード) % 7 - 6
   const dd = sWeek * 7 + ((7 + tDay - day1) % 7) - 6;
   const sDate = new Date(date1.getFullYear(), date1.getMonth(), dd);
   return sDate;
@@ -320,6 +323,16 @@ export const stringToDate = (dateString1: string, pulas: number = 0): Date => {
   const dt = '' !== dateString1 ? new Date(dateString1) : new Date();
   dt.setDate(dt.getDate() + pulas);
   return dt;
+};
+
+//------------------------------------
+// 日付(Date)+plusでDateを返す(入力日付に影響なし)
+// plus=0 で日付コピー
+//------------------------------------
+export const dtPlus = (dt: Date, pulas: number = 0) => {
+  const end = new Date(dt.getTime());
+  end.setDate(end.getDate() + pulas);
+  return end;
 };
 
 //--------------------------------------------
@@ -718,8 +731,7 @@ export const replaceMMM = (
     });
   }
   return text;
-}
-
+};
 
 //--------------------------------------
 //協定世界時のシリアル値：ExcelTimeUTC ＝ UnixTime / 86400 + 25569
@@ -868,7 +880,7 @@ export const calcGcd = (a: number, b: number): number => {
 };
 
 //------------------------------
-// "1234"->[1,2,3,4]に変換する
+// "12-34"->[1,2,3,4]に変換する
 //------------------------------
 export const numberStringToArray = (num: string | number): number[] => {
   //String型に変換

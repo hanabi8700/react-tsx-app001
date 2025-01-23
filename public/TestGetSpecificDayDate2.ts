@@ -68,16 +68,16 @@ export const numberStringToArray = (num) => {
   }
   return result;
 };
-
+//getNthWeekday
 export const getSpecificDayDate = (
-  tDay: number, //祝日の曜日コード
+  tDay: number, //曜日コード
   sWeek: number = 1, //週番号
   dateString1: string = '',
 ) => {
   const date1 = stringToDate(dateString1);
   date1.setDate(1); //1日
   const day1 = date1.getDay(); //1日の曜日
-  //1月第2月曜日=(祝日の週番号)*7 + (7+祝日の曜日コード - 月初の曜日コード) % 7 - 6
+  //1月第2月曜日=(週番号)*7 + (7+曜日コード - 月初の曜日コード) % 7 - 6
   const dd = sWeek * 7 + ((7 + tDay - day1) % 7) - 6;
   console.log(dd)
   const sDate = new Date(date1.getFullYear(), date1.getMonth(), dd);
@@ -97,11 +97,13 @@ const callCalc401 = (weekdays, weeks, strDate1) => {
   });
   return date100;
 };
-const res = callCalc401(6, 7, '2024/9/16');
+const res = callCalc401(3, -2, '2024/04/16');
 // 第一引数に5（金曜日）、第二引数に1（1週間後）を指定します
 //const res1 = getSpecificDayDate(0, 3, '2024/6/16');
 console.log(res[0].toLocaleDateString(), new Date().getDay());
-const da5 = getDatesBetween(new Date("2024/9/1"),res[0]);
-console.log(da5[0].toLocaleDateString());
-console.log(da5[da5.length - 1].toLocaleDateString(), da5.length);
-console.log(getFormatDateTime(new Date("2024/9/16 0:00")));
+// const da5 = getDatesBetween(new Date("2024/9/1"),res[0]);
+// console.log(da5[0].toLocaleDateString());
+// console.log(da5[da5.length - 1].toLocaleDateString(), da5.length);
+// console.log(getFormatDateTime(new Date("2024/9/16 0:00")));
+console.log('numberStringToArray:', numberStringToArray("-12-34"));
+console.log('getSpecificDayDate', getSpecificDayDate(3,0,"2024/04/11").toLocaleDateString())

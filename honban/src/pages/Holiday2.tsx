@@ -4,6 +4,8 @@ import { HolidayList } from './Rokuyo';
 import * as calc from '~/CalenderLib';
 import { CalledCalc300 } from '../../../public/CalledCalc300';
 import { CalledCalc400 } from '../../../public/CalledCalc400';
+import { CalledFurike100 } from '../../../public/CalledFurike100';
+
 export type Result1 = {
   type: number;
   date: Date[];
@@ -35,12 +37,12 @@ export const Holiday2 = (
   let resultObj = calc.stringToObjectArray(specialHolidayTxt);
   const dSA = getSpringAtumday(resultYear); //春分の日3月、秋分の日9月
   resultObj = dSAinFlag ? resultObj.concat(dSA) : resultObj; //結合
-  debug9 && console.log('Result:', resultObj);
-  //   {//形式
+  // debug9 && console.log('Result:', resultObj);
+  //   {//形式 ResultObj  xF -> F:振替コード
   //   date: '2024/08/16', string ->日付
   //   name: '祝日4',   string
   //   holiday: true,   boolean--->祝日判断
-  //   order: 1101,     number---->30xx,40xx,3400,3405
+  //   order: 1101,     number---->30xF,40xF,3400,3405
   //   type: 'holiday', string
   //   option: 0,       number---->回数xxxnn
   //   duration: 4,     number
@@ -85,7 +87,7 @@ export const Holiday2 = (
               array1[0] || result.type == 302
                 ? result.data010 * 100 + (index % (array1[0] ? array1[0] : 100))
                 : result.data010 + index * 100,
-            order: result.type * 10, //(3xx)
+            order: result.type * 10 + Number(data[14][1]), //(3xx)
             type: 'Holiday',
             holiday: holi,
             backgroundColor: 'None',
@@ -110,16 +112,12 @@ export const Holiday2 = (
             date: calc.getDateWithString(date),
             name: data[13],
             option: result.data010,
-            order: result.type * 10, //(4xx)
+            order: result.type * 10 + Number(data[14][1]), //(4xx)
             type: 'Holiday',
             holiday: holi,
             backgroundColor: 'None',
           });
         });
-      }
-      // -----------------------------------------
-      if (data[14][1] === '1') {
-        //
       }
     }
   }
