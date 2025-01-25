@@ -479,7 +479,7 @@ export const getFormatDateTimeStr = (date: Date, time: number = 0) => {
     .split('T')[time];
 };
 //-----------------------------------------------------
-//その月の初日、最終日、先月、来月を配列で返す
+//その月の初日、最終日、先月末、来月始めを配列で返す
 //getFirstLastDayOfMouth('2024/02/20')[0] //'2024/2/1'
 //-----------------------------------------------------
 export const getFirstLastDayOfMouth = (dateString: string | number) => {
@@ -835,6 +835,48 @@ export function getJapanCalendar(currentDate: Date) {
   }
   return {};
 }
+
+// -----------------------------------------
+// 振替処理1
+// 指定日が日曜日土曜日祭日ならその前後の日の以前後の平日に振り替え
+// obj1=[{date:"2025/05/05"},,,{data:string}]
+// -----------------------------------------
+export const furikae901 = (
+  date: string,
+  resultHoliday: obj1[],
+  increase = true,
+) => {
+  let dt = stringToDate(date);
+  let checkHoliday = -1;
+  let dayCount = 1;
+  const offset = increase ? 1 : -1;//前-1;後+1
+  while (dayCount) {
+    dayCount = 0;
+    const dateDay = dt.getDay(); //youbi
+    let addDaySunSat;
+    if (increase) {
+      addDaySunSat = dateDay === 0 ? 1 : dateDay === 6 ? 2 : 0; //日土
+    } else {
+      addDaySunSat = dateDay === 0 ? -2 : dateDay === 6 ? -1 : 0; //日土
+    }
+    checkHoliday =
+      addDaySunSat === 0
+        ? resultHoliday.findIndex((w) => w.date === getDateWithString(dt))
+        : -1;
+    addDaySunSat = checkHoliday >= 0 ? offset : addDaySunSat;
+    dayCount += addDaySunSat;
+    dayCount != 0 ? (dt = dtPlus(dt, dayCount)) : null;
+    //----- 土日または祭日前の日付:dt
+    checkHoliday = resultHoliday.findIndex(
+      (w) => w.date === getDateWithString(dt),
+    );
+    checkHoliday >= 0
+      ? ((dt = dtPlus(dt, offset)), (dayCount += offset))
+      : null;
+  }
+
+  return getDateWithString(dt);
+};
 
 //var date = new Date();
 //var copiedDate = new Date(date.getTime());

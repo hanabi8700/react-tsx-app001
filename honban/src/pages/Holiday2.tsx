@@ -4,7 +4,6 @@ import { HolidayList } from './Rokuyo';
 import * as calc from '~/CalenderLib';
 import { CalledCalc300 } from '../../../public/CalledCalc300';
 import { CalledCalc400 } from '../../../public/CalledCalc400';
-import { CalledFurike100 } from '../../../public/CalledFurike100';
 
 export type Result1 = {
   type: number;
@@ -76,7 +75,7 @@ export const Holiday2 = (
         );
         //result.type == 302 && data010>=1は年越えの回数あり
         debug9 && console.log('F300', data, result);
-        const holi = data[14][2] === '1' ? true : false;
+        const holi = data[14][2] != '0' ? true : false;
         // const [num9, year9, month] = calc.getNamYearMonth(data[11]);
         const array1 = calc.getNamYearMonth(data[11]);
         result.date.forEach((date, index) => {
@@ -88,6 +87,7 @@ export const Holiday2 = (
                 ? result.data010 * 100 + (index % (array1[0] ? array1[0] : 100))
                 : result.data010 + index * 100,
             order: result.type * 10 + Number(data[14][1]), //(3xx)
+            option1: Number(data[14]),
             type: 'Holiday',
             holiday: holi,
             backgroundColor: 'None',
@@ -105,7 +105,7 @@ export const Holiday2 = (
           calendarDate,
         );
         debug9 && console.log('data400', data, result);
-        const holi = data[14][2] === '1' ? true : false;
+        const holi = data[14][2] != '0' ? true : false;
 
         result.date.forEach((date) => {
           result2.push({
@@ -113,6 +113,7 @@ export const Holiday2 = (
             name: data[13],
             option: result.data010,
             order: result.type * 10 + Number(data[14][1]), //(4xx)
+            option1: Number(data[14]),
             type: 'Holiday',
             holiday: holi,
             backgroundColor: 'None',
