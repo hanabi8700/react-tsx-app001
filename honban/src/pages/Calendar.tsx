@@ -138,7 +138,7 @@ export const Calendar = () => {
       backgroundColor: 'None',
     },
     {
-      date: '2024/08/13',
+      date: '2025/02/13',
       name: '継続14',
       holiday: false,
       order: 1101,
@@ -148,7 +148,7 @@ export const Calendar = () => {
       backgroundColor: 'None',
     },
     {
-      date: '2024/08/15',
+      date: '2025/02/15',
       name: '継続2',
       holiday: false,
       order: 1101,
@@ -158,7 +158,7 @@ export const Calendar = () => {
       backgroundColor: 'None',
     },
     {
-      date: '2024/08/16',
+      date: '2025/02/16',
       name: '継続4',
       holiday: false,
       order: 1101,
@@ -215,10 +215,9 @@ export const Calendar = () => {
   // holidayArray = holidayArray2;
   // 3N0or4N0 の振替コード処理
   holidayArray = CalledFurikae100(holidayArray2);
-  console.log("🚀 ~ file: Calendar.tsx:218 ~ Calendar ~ holidayArray:", holidayArray)
+  calc.dateSort(holidayArray2, ['date']); //Sort
 
   //
-
   debug9 && console.log('---------------------------------');
   // -----------------------------Display-Calendar-----------------------------
   return (
