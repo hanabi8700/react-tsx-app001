@@ -15,21 +15,58 @@ interface obj1 {
 }
 const debug9 = false;
 const debug8 = false;
-//-----------------------------------------------------
-// 祝日計算（国民の休日、振替休日、特別記念日、イベント情報）
-//-----------------------------------------------------
-// specialHolidayTxt:"11,200605,,創立記念日(%N周年),300,1,2022"など
-// calendarDateStr:"2025/01/10"
-// dSAinFlag:default=false:春秋分の日は取り込まい
-// ------------------------------------
+
 export const Holiday2 = (
   specialHolidayTxt: string,
   calendarDateStr: string,
   dSAinFlag = false, //春秋分の日取り込まい
 ): HolidayList[] => {
-  const calendarDate = calc.initDate(calendarDateStr); //1日
-  const resultYear = calendarDate.getFullYear();
-  debug9 && console.log('カレンダー:', calendarDate.toLocaleDateString());
+  // const calendarDate = new Date(calendarDateStr);
+  // const CYear = calendarDate.getFullYear();
+
+  const nextMonth = calc.getFirstLastDayOfMouth(calendarDateStr);
+  const nextMonthStr = calc.getDateWithString(nextMonth[3]);
+  const prevMonthStr = calc.getDateWithString(nextMonth[2]);
+
+  //先月
+  const holidayArrayPrev = Holiday21(
+    specialHolidayTxt,
+    prevMonthStr,
+    dSAinFlag,
+  );
+  //来月
+  const holidayArrayNext = Holiday21(
+    specialHolidayTxt,
+    nextMonthStr,
+    dSAinFlag,
+  );
+  //今月
+  const holidayArray = Holiday21(specialHolidayTxt, calendarDateStr, dSAinFlag);
+  const checkA = holidayArrayNext.concat(holidayArrayPrev, holidayArray);
+  //マージ重複削除
+  const arrayB = calc.objMarge(checkA);
+  const result = arrayB as HolidayList[];
+  return result;
+};
+
+//-----------------------------------------------------
+// 祝日計算（国民の休日、振替休日、特別記念日、イベント情報）
+//-----------------------------------------------------
+// specialHolidayTxtは、monthlyitem の内容と yearly3 の内容
+// 202,1,0,正月,302,1から1,12,12,12月寒冷の候（師走）,350,4まで
+// specialHolidayTxt:"11,200605,,創立記念日(%N周年),300,1,2022"など
+// calendarDateStr:"2025/01/10"
+// dSAinFlag:default=false:春秋分の日は取り込まい
+// ------------------------------------
+export const Holiday21 = (
+  specialHolidayTxt: string,
+  calendarDateStr: string,
+  dSAinFlag = false, //春秋分の日取り込まい
+): HolidayList[] => {
+  // const calendarDate = new Date(calendarDateStr);
+  const calendarDateOne = calc.initDate(calendarDateStr); //1日
+  const resultYear = calendarDateOne.getFullYear();
+  debug9 && console.log('カレンダー:', calendarDateOne.toLocaleDateString());
 
   const result2: HolidayList[] = [];
   // 文字列形式で取得するので改行文字で区切って 配列[10]から始まるに変換
@@ -50,7 +87,7 @@ export const Holiday2 = (
 
   for (let i = 0; i < resultObj.length; i++) {
     const data = resultObj[i];
-    debug8 && console.log('data', data, i);
+    (debug8 || debug9) && console.log('data>>Stat', data, i);
 
     //施工年チェック
     const status = checkStartEndYear(data, resultYear);
@@ -71,13 +108,14 @@ export const Holiday2 = (
           data[10], //日にち
           data[11], //始まり年月、回数月
           Number(data[12]), //か月毎
-          calendarDate,
+          calendarDateOne,
         );
         //result.type == 302 && data010>=1は年越えの回数あり
-        debug9 && console.log('F300', data, result);
+        debug9 && console.log('F300_kekka', data, result);
         const holi = data[14][2] != '0' ? true : false;
         // const [num9, year9, month] = calc.getNamYearMonth(data[11]);
         const array1 = calc.getNamYearMonth(data[11]);
+        // resultの計算結果をresult2へ追加
         result.date.forEach((date, index) => {
           result2.push({
             date: calc.getDateWithString(date),
@@ -102,11 +140,11 @@ export const Holiday2 = (
           data[10], //週間
           data[11], //始年月
           data[12], //曜日
-          calendarDate,
+          calendarDateOne,
         );
         debug9 && console.log('data400', data, result);
         const holi = data[14][2] != '0' ? true : false;
-
+        // resultの計算結果をresult2へ追加
         result.date.forEach((date) => {
           result2.push({
             date: calc.getDateWithString(date),
@@ -162,7 +200,7 @@ const checkStartEndYear = (
   //始年月
   const [num9, year9, month] = calc.getNamYearMonth(data[11]);
   (debug9 || debug8) &&
-    console.log('getNamYearMonth', data[11], data[13], num9, year9, month);
+    console.log('getNamYearMonth', data[11], data[13], '>', num9, year9, month);
   const stat3 = Number(year9 ? year9 : 0) > resultYear;
   //終年
   const stat1 = Number(data[16] ? data[16] : 9999) < resultYear;

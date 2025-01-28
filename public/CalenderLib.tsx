@@ -6,6 +6,8 @@
 // console.log(date.toISOString()); // 2022-05-05T00:00:00.000Z
 // get current date
 // const date = new Date();
+// const calendarDatePre = new Date(CYear - 1, 12 - 1, 1);
+// const calendarDatePos = new Date(CYear + 1, 1 - 1, 1);
 
 // get current month
 // const currentMonth = date.getMonth();
@@ -15,6 +17,9 @@
 
 // 7日後の日付を計算
 // const sevenDaysLater = new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+//const arrayB = [...new Set(arrayA)];
+//const arrayB = Array.from(new Set(arrayA));
 
 export interface ObjectLiteralLike0 {
   today: Date;
@@ -318,6 +323,8 @@ export const getDateDiff = (
 
 //-----------------------------------
 // 日付("2024-5-16")+plusをDate変換される
+// lastDate.setMonth(month99 - 1, Number(cDayDate)); //任意
+// const date31 = CallLib.stringToDate(lastDate.toString());
 //-----------------------------------
 export const stringToDate = (dateString1: string, pulas: number = 0): Date => {
   const dt = '' !== dateString1 ? new Date(dateString1) : new Date();
@@ -849,7 +856,7 @@ export const furikae901 = (
   let dt = stringToDate(date);
   let checkHoliday = -1;
   let dayCount = 1;
-  const offset = increase ? 1 : -1;//前-1;後+1
+  const offset = increase ? 1 : -1; //前-1;後+1
   while (dayCount) {
     dayCount = 0;
     const dateDay = dt.getDay(); //youbi
@@ -1040,8 +1047,31 @@ export const cloneObject4 = (originalDate: any) => {
   const deepCopy = structuredClone(originalDate);
   return deepCopy;
 };
-//
-//
+
+//------------------------------------------------
+// オブジェクト配列の重複しているのを削除します（新しい配列）
+//findIndex()内のコールバック関数を書き換えることで、
+// オブジェクト重複の定義を自由に設定できます
+//------------------------------------------------
+export const objMarge = (checkA:obj1[]) => {
+  const arrayB = checkA.filter(
+    (element, index, self) =>
+      self.findIndex((e) => areObjectsEqual(e, element)) === index,
+  );
+  return arrayB;
+};
+
+const areObjectsEqual = (obj1: obj1, obj2: obj1) => {
+  if (Object.keys(obj1).length !== Object.keys(obj2).length) {
+    return false;
+  }
+  for (const key in obj1) {
+    if (obj1[key] !== obj2[key]) {
+      return false;
+    }
+  }
+  return true;
+};
 
 /**
  * 任意の桁で四捨五入する関数
