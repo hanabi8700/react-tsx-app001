@@ -55,62 +55,62 @@ export const CalledFurikae100 = (data: HolidayList[]) => {
   return result;
 };
 
-// -----------------------------------------
-// 振替処理0
-// 指定日が日曜日土曜日祭日ならその次の日の以降の平日に振り替え
-// HolidayList=[{date:"2025/05/05"},,,{data:string}]
-// -----------------------------------------
-const furikae200 = (date: string, resultHoliday: HolidayList[]) => {
-  let dt = calc.stringToDate(date);
-  let checkHoliday = -1;
-  let dayCount = 1;
-  while (dayCount) {
-    dayCount = 0;
-    const dateDay = dt.getDay(); //youbi
-    let addDaySunSat = dateDay === 0 ? 1 : dateDay === 6 ? 2 : 0; //日土
-    checkHoliday =
-      addDaySunSat === 0
-        ? resultHoliday.findIndex((w) => w.date === calc.getDateWithString(dt))
-        : -1;
-    addDaySunSat = checkHoliday >= 0 ? 1 : addDaySunSat;
-    dayCount += addDaySunSat;
-    dayCount != 0 ? (dt = calc.dtPlus(dt, dayCount)) : null;
-    //----- 土日または祭日後の日付:dt
-    checkHoliday = resultHoliday.findIndex(
-      (w) => w.date === calc.getDateWithString(dt),
-    );
-    checkHoliday >= 0 ? ((dt = calc.dtPlus(dt, 1)), dayCount++) : null;
-  }
+// // -----------------------------------------
+// // 振替処理0
+// // 指定日が日曜日土曜日祭日ならその次の日の以降の平日に振り替え
+// // HolidayList=[{date:"2025/05/05"},,,{data:string}]
+// // -----------------------------------------
+// const furikae200 = (date: string, resultHoliday: HolidayList[]) => {
+//   let dt = calc.stringToDate(date);
+//   let checkHoliday = -1;
+//   let dayCount = 1;
+//   while (dayCount) {
+//     dayCount = 0;
+//     const dateDay = dt.getDay(); //youbi
+//     let addDaySunSat = dateDay === 0 ? 1 : dateDay === 6 ? 2 : 0; //日土
+//     checkHoliday =
+//       addDaySunSat === 0
+//         ? resultHoliday.findIndex((w) => w.date === calc.getDateWithString(dt))
+//         : -1;
+//     addDaySunSat = checkHoliday >= 0 ? 1 : addDaySunSat;
+//     dayCount += addDaySunSat;
+//     dayCount != 0 ? (dt = calc.dtPlus(dt, dayCount)) : null;
+//     //----- 土日または祭日後の日付:dt
+//     checkHoliday = resultHoliday.findIndex(
+//       (w) => w.date === calc.getDateWithString(dt),
+//     );
+//     checkHoliday >= 0 ? ((dt = calc.dtPlus(dt, 1)), dayCount++) : null;
+//   }
 
-  return calc.getDateWithString(dt);
-};
+//   return calc.getDateWithString(dt);
+// };
 
-// -----------------------------------------
-// 振替処理1
-// 指定日が日曜日土曜日祭日ならその前の日の以前の平日に振り替え
-// HolidayList=[{date:"2025/05/05"},,,{data:string}]
-// -----------------------------------------
-const furikae201 = (date: string, resultHoliday: HolidayList[]) => {
-  let dt = calc.stringToDate(date);
-  let checkHoliday = -1;
-  let dayCount = 1;
-  while (dayCount) {
-    dayCount = 0;
-    const dateDay = dt.getDay(); //youbi
-    let addDaySunSat = dateDay === 0 ? -2 : dateDay === 6 ? -1 : 0; //日土
-    checkHoliday =
-      addDaySunSat === 0
-        ? resultHoliday.findIndex((w) => w.date === calc.getDateWithString(dt))
-        : -1;
-    addDaySunSat = checkHoliday >= 0 ? -1 : addDaySunSat;
-    dayCount += addDaySunSat;
-    dayCount != 0 ? (dt = calc.dtPlus(dt, dayCount)) : null;
-    //----- 土日または祭日前の日付:dt
-    checkHoliday = resultHoliday.findIndex(
-      (w) => w.date === calc.getDateWithString(dt),
-    );
-    checkHoliday >= 0 ? ((dt = calc.dtPlus(dt, -1)), dayCount--) : null;
-  }
+// // -----------------------------------------
+// // 振替処理1
+// // 指定日が日曜日土曜日祭日ならその前の日の以前の平日に振り替え
+// // HolidayList=[{date:"2025/05/05"},,,{data:string}]
+// // -----------------------------------------
+// const furikae201 = (date: string, resultHoliday: HolidayList[]) => {
+//   let dt = calc.stringToDate(date);
+//   let checkHoliday = -1;
+//   let dayCount = 1;
+//   while (dayCount) {
+//     dayCount = 0;
+//     const dateDay = dt.getDay(); //youbi
+//     let addDaySunSat = dateDay === 0 ? -2 : dateDay === 6 ? -1 : 0; //日土
+//     checkHoliday =
+//       addDaySunSat === 0
+//         ? resultHoliday.findIndex((w) => w.date === calc.getDateWithString(dt))
+//         : -1;
+//     addDaySunSat = checkHoliday >= 0 ? -1 : addDaySunSat;
+//     dayCount += addDaySunSat;
+//     dayCount != 0 ? (dt = calc.dtPlus(dt, dayCount)) : null;
+//     //----- 土日または祭日前の日付:dt
+//     checkHoliday = resultHoliday.findIndex(
+//       (w) => w.date === calc.getDateWithString(dt),
+//     );
+//     checkHoliday >= 0 ? ((dt = calc.dtPlus(dt, -1)), dayCount--) : null;
+//   }
 
-  return calc.getDateWithString(dt);
-};
+//   return calc.getDateWithString(dt);
+// };
