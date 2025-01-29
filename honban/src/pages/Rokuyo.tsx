@@ -14,6 +14,7 @@ export interface HolidayList {
   name1?: string;
   option1?: number;
   duration?: number;
+  date1?:string;
   id?: number;
   backgroundColor: string;
 }

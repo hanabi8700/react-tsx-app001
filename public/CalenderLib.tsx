@@ -6,6 +6,8 @@
 // console.log(date.toISOString()); // 2022-05-05T00:00:00.000Z
 // get current date
 // const date = new Date();
+// const calendarDatePre = new Date(CYear - 1, 12 - 1, 1);
+// const calendarDatePos = new Date(CYear + 1, 1 - 1, 1);
 
 // get current month
 // const currentMonth = date.getMonth();
@@ -15,6 +17,9 @@
 
 // 7日後の日付を計算
 // const sevenDaysLater = new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+//const arrayB = [...new Set(arrayA)];
+//const arrayB = Array.from(new Set(arrayA));
 
 export interface ObjectLiteralLike0 {
   today: Date;
@@ -199,21 +204,24 @@ export const sprinAutomDay = (year: number = 2024) => {
 };
 
 //------------------------------------------------------------
-// 年月の指定した曜日の日付を取得する関数
+// 指定年月の第○番目の○曜日の日付を返します。関数 getNthWeekday
+// 曜日を0（日曜）から6（土曜）の数値で指定します。
+// 週番号（第○週目）を指定します。1からN
+// 日付文字列"2025/01/06"
 // 1月第2月曜日の日付を取得する場合は、
 // 第一引数に1（月曜日）、第二引数に2（第2）を指定します[第2月曜日]
 // const res1 = getSpecificDayDate(1, 2, '2024/01/01');
 // console.log(res1.toLocaleDateString())  //2024/01/8
 //------------------------------------------------------------
 export const getSpecificDayDate = (
-  tDay: number, //祝日の曜日コード
+  tDay: number, //曜日コード0-6
   sWeek: number = 1, //週番号
   dateString1: string = '',
 ) => {
   const date1 = stringToDate(dateString1);
   date1.setDate(1); //1日
   const day1 = date1.getDay(); //1日の曜日
-  //1月第2月曜日=(祝日の週番号)*7 + (7+祝日の曜日コード - 月初の曜日コード) % 7 - 6
+  //1月第2月曜日=(週番号)*7 + (7+曜日コード - 月初の曜日コード) % 7 - 6
   const dd = sWeek * 7 + ((7 + tDay - day1) % 7) - 6;
   const sDate = new Date(date1.getFullYear(), date1.getMonth(), dd);
   return sDate;
@@ -315,11 +323,23 @@ export const getDateDiff = (
 
 //-----------------------------------
 // 日付("2024-5-16")+plusをDate変換される
+// lastDate.setMonth(month99 - 1, Number(cDayDate)); //任意
+// const date31 = CallLib.stringToDate(lastDate.toString());
 //-----------------------------------
 export const stringToDate = (dateString1: string, pulas: number = 0): Date => {
   const dt = '' !== dateString1 ? new Date(dateString1) : new Date();
   dt.setDate(dt.getDate() + pulas);
   return dt;
+};
+
+//------------------------------------
+// 日付(Date)+plusでDateを返す(入力日付に影響なし)
+// plus=0 で日付コピー
+//------------------------------------
+export const dtPlus = (dt: Date, pulas: number = 0) => {
+  const end = new Date(dt.getTime());
+  end.setDate(end.getDate() + pulas);
+  return end;
 };
 
 //--------------------------------------------
@@ -466,7 +486,7 @@ export const getFormatDateTimeStr = (date: Date, time: number = 0) => {
     .split('T')[time];
 };
 //-----------------------------------------------------
-//その月の初日、最終日、先月、来月を配列で返す
+//その月の初日、最終日、先月末、来月始めを配列で返す
 //getFirstLastDayOfMouth('2024/02/20')[0] //'2024/2/1'
 //-----------------------------------------------------
 export const getFirstLastDayOfMouth = (dateString: string | number) => {
@@ -718,8 +738,7 @@ export const replaceMMM = (
     });
   }
   return text;
-}
-
+};
 
 //--------------------------------------
 //協定世界時のシリアル値：ExcelTimeUTC ＝ UnixTime / 86400 + 25569
@@ -824,6 +843,48 @@ export function getJapanCalendar(currentDate: Date) {
   return {};
 }
 
+// -----------------------------------------
+// 振替処理1
+// 指定日が日曜日土曜日祭日ならその前後の日の以前後の平日に振り替え
+// obj1=[{date:"2025/05/05"},,,{data:string}]
+// -----------------------------------------
+export const furikae901 = (
+  date: string,
+  resultHoliday: obj1[],
+  increase = true,
+) => {
+  let dt = stringToDate(date);
+  let checkHoliday = -1;
+  let dayCount = 1;
+  const offset = increase ? 1 : -1; //前-1;後+1
+  while (dayCount) {
+    dayCount = 0;
+    const dateDay = dt.getDay(); //youbi
+    let addDaySunSat;
+    if (increase) {
+      addDaySunSat = dateDay === 0 ? 1 : dateDay === 6 ? 2 : 0; //日土
+    } else {
+      addDaySunSat = dateDay === 0 ? -2 : dateDay === 6 ? -1 : 0; //日土
+    }
+    checkHoliday =
+      addDaySunSat === 0
+        ? resultHoliday.findIndex((w) => w.date === getDateWithString(dt))
+        : -1;
+    addDaySunSat = checkHoliday >= 0 ? offset : addDaySunSat;
+    dayCount += addDaySunSat;
+    dayCount != 0 ? (dt = dtPlus(dt, dayCount)) : null;
+    //----- 土日または祭日前の日付:dt
+    checkHoliday = resultHoliday.findIndex(
+      (w) => w.date === getDateWithString(dt),
+    );
+    checkHoliday >= 0
+      ? ((dt = dtPlus(dt, offset)), (dayCount += offset))
+      : null;
+  }
+
+  return getDateWithString(dt);
+};
+
 //var date = new Date();
 //var copiedDate = new Date(date.getTime());
 //-------SetDate()の挙動---------------
@@ -868,7 +929,7 @@ export const calcGcd = (a: number, b: number): number => {
 };
 
 //------------------------------
-// "1234"->[1,2,3,4]に変換する
+// "12-34"->[1,2,3,4]に変換する
 //------------------------------
 export const numberStringToArray = (num: string | number): number[] => {
   //String型に変換
@@ -986,8 +1047,31 @@ export const cloneObject4 = (originalDate: any) => {
   const deepCopy = structuredClone(originalDate);
   return deepCopy;
 };
-//
-//
+
+//------------------------------------------------
+// オブジェクト配列の重複しているのを削除します（新しい配列）
+//findIndex()内のコールバック関数を書き換えることで、
+// オブジェクト重複の定義を自由に設定できます
+//------------------------------------------------
+export const objMarge = (checkA:obj1[]) => {
+  const arrayB = checkA.filter(
+    (element, index, self) =>
+      self.findIndex((e) => areObjectsEqual(e, element)) === index,
+  );
+  return arrayB;
+};
+
+const areObjectsEqual = (obj1: obj1, obj2: obj1) => {
+  if (Object.keys(obj1).length !== Object.keys(obj2).length) {
+    return false;
+  }
+  for (const key in obj1) {
+    if (obj1[key] !== obj2[key]) {
+      return false;
+    }
+  }
+  return true;
+};
 
 /**
  * 任意の桁で四捨五入する関数

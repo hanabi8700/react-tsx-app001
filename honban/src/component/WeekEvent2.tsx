@@ -108,9 +108,6 @@ const weekEvent = (
       // debug9 && console.log('index:', weekdayArray[index].date, aa3);
       return aa3;
     });
-    //%[+-]M....AEON支払日%M月分..Date.month
-    //%[+-]N...."国民健康保険料(第%-N/10期)"..option1xx,2xx
-    //-Nは+N:109=>110,-Nはそのまま205=>204,%N=>6700,%-Nは+N=>1500
     const aa1: (EventType2 | HolidayList2)[] = calc.deepCloneObj(aa);
     //------------------------------------------------------------------
     //週間[横枠]ごとにしたデーターに色を付けるUndefinedにも表示するように変換する
@@ -124,6 +121,7 @@ const weekEvent = (
           backgroundColor: 'rgba(0, 0, 0, 0.1)',
           title: 'd',
           date: weekdayArray[index].date,
+          duration: 1,
         };
       }
       //----------第一日目のみその他はundefined--- aa[]! はnull拒否 ----------
@@ -135,7 +133,8 @@ const weekEvent = (
 
       if (index === 0 && d.date && d.date !== weekdayArray[index].date) {
         //日曜日で先週からの継続を処理
-        const dayCount = calc.getDateDiff(d.date, weekdayArray[index].date);
+        let dayCount = calc.getDateDiff(d.date, weekdayArray[index].date);
+        dayCount = dayCount < 0 ? 0 : dayCount;
         d.duration = aduration - dayCount < 7 ? aduration - dayCount : 7;
         return d;
       }
