@@ -636,8 +636,11 @@ export const addMonths2Date3 = (
 };
 //-------------------------------------------------------------------
 // 1週間の曜日[日曜日始まり]に日付を日付[list]で返す
-// [{day: 0, date: 'Sun Jun 02 2024 19:06:36 GMT+0900 (日本標準時)'},{}...,{}]
-// getWeekDay7("2024/06/05")の週の日曜日始まり7日間
+// getWeekDay7("2025/05/01")の週の日曜日始まり7日間
+// 返値:
+// {"id": 0,"dateOnData": 27,"date": "2025/04/27","inMonth": 0",day":0}
+// {"id":1...,"id":2.....}
+// {"id": 6, "dateOnData": 3, "date": '2025/05/03', "inMonth": 1,"day":6}
 //-------------------------------------------------------------------
 export const getWeekDay7 = (
   dateString1: string = '', //本日
@@ -667,6 +670,7 @@ export const getWeekDay7 = (
         dateOnData: date,
         date: getDateWithString(newDate),
         inMonth: inMonth,
+        day: newDate.getDay(),
       };
     });
   return dayList;
@@ -885,6 +889,20 @@ export const furikae901 = (
   return getDateWithString(dt);
 };
 
+//-------------------------------------------------------
+//-------------------------------------------------------
+// const addKeys = (key1: string, key2: string): string[] => {
+// return [key1, key2];
+// };
+// addKeys("a", "b");
+// ----
+// const addKeys = <T, U>(key1: T, key2: U): Array<T | U> => {
+// return [key1, key2];
+// };
+// 関数の呼び出し側では addKeys < type, type >(arg1, arg2)として
+// 渡す引数に対しての型を <>に定義します。
+// addKeys < string, number > ("a", 1);
+//-------------------------------------------------------
 //var date = new Date();
 //var copiedDate = new Date(date.getTime());
 //-------SetDate()の挙動---------------
@@ -927,7 +945,14 @@ export const calcLcm = (...argc: number[]) => {
 export const calcGcd = (a: number, b: number): number => {
   return b === 0 ? a : calcGcd(b, a % b);
 };
-
+//---------------------------------------
+// Sum(1,2,5) :8
+//---------------------------------------
+export const sum = (...numbers: number[]) => {
+  return numbers.reduce((accumulator, current) => {
+    return accumulator + current;
+  }, 0);
+};
 //------------------------------
 // "12-34"->[1,2,3,4]に変換する
 //------------------------------
@@ -1110,7 +1135,8 @@ export const joinList = (newDataset: object[], tagkey: string): string[] => {
 // オブジェクト→配列 arr.find(([id, data])=>{})
 //const arr = Object.entries(obj);//id=obj.key,data={obj.data}
 //--------------------------------
-// オブジェクト配列で特定の値KEYでソートする処理
+// オブジェクト配列で特定の値KEYでソートする処理(上書き)
+// calc.dateSort(holidayArray, ['date']); //Sort
 //-------------------------------------
 export const dateSort = (
   //const myObj: {[index: string]:any} = {}

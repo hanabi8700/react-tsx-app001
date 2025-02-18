@@ -1,14 +1,16 @@
 //import React from 'react';
 import * as calc from '~/CalenderLib';
 import { MouseEventHandler, useCallback, useMemo, useState } from 'react';
-// import * as calc from '../../../public/CalenderLib';
 import './Calendar.css';
 import Rokuyo, { HolidayList } from './Rokuyo';
+// import { DataEventsType } from './ServerAccess'; //interface
+
 
 import Holiday from './Holiday';
 import WeekDay from '../component/WeekDay';
 import { ServerAccess } from './ServerAccess';
 import { CalledFurikae100 } from '~/CalledFurikae100';
+import { stockedDaysType, CalenderStack } from '~/CalenderStack';
 
 // export const fetchUrlArray = () => {
 //   const url = [
@@ -135,6 +137,7 @@ export const Calendar = () => {
       order: 0,
       type: 'today',
       option: 0,
+      duration: 1,
       backgroundColor: 'None',
     },
     {
@@ -187,9 +190,10 @@ export const Calendar = () => {
 
   //--------------------------------------
   // ホリデイ祝日、六曜、特別記念日など取得
+  // 表示カレンダー範囲
   //--------------------------------------
   const result2 = Rokuyo(betweenArray); //六曜
-  const result3 = Holiday(result2); //土用の丑の日(ID:31)
+  const result3 = Holiday(result2); //土用の丑の日(ID:31)、節分(ID:32)
   holidayArray = holidayArray.concat(result2, result3); //配列結合シャローコピー
   //calc.dateSort(holidayArray, ['date', 'order']);
   for (const element of holidayArray) {
@@ -206,7 +210,8 @@ export const Calendar = () => {
   // Return: stockedDays, dataEvent, holidayArray2
   // Stock:ストックID番号, Event:イベント情報, Holiday:祝日休日など
   //-----------------------------------------------------
-  const [stockedDays, dataEvent, holidayArray2] = ServerAccess(
+  // const [stockedDays, dataEvent, holidayArray2] = ServerAccess(
+  const [dataEvent, holidayArray2] = ServerAccess(
     calendarDates,
     calendarDateStr,
     lastDateDay,
@@ -215,8 +220,22 @@ export const Calendar = () => {
   // holidayArray = holidayArray2;
   // 3N0or4N0 の振替コード処理
   holidayArray = CalledFurikae100(holidayArray2);
-  calc.dateSort(holidayArray2, ['date']); //Sort
+  // 振替後にstockDays作成
+  let stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
+  stockedDays = CalenderStack(holidayArray, stockedDays, true, true); //初期化伴う
+  stockedDays = CalenderStack(dataEvent, stockedDays); //並び替え
 
+  calc.dateSort(holidayArray, ['date', 'order']); //Sort
+  calc.dateSort(dataEvent, ['date']); //Sort
+  calc.dateSort(stockedDays, ['date']); //Sort
+  debug8 && console.log('Calendar-stockedDays:', stockedDays);
+  debug8 && console.log('Calendar-holidayArray:', holidayArray);
+  debug8 && console.log('Calendar-dataEvent:', dataEvent);
+
+  // const resultFilter = holidayArray.filter((d) => {
+  //   return d.duration! <= 0 || !d.duration;
+  // });
+  // console.log('resultFilter', resultFilter);
   //
   debug9 && console.log('---------------------------------');
   // -----------------------------Display-Calendar-----------------------------

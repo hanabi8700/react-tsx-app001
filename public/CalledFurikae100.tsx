@@ -49,6 +49,7 @@ export const CalledFurikae100 = (data: HolidayList[]) => {
       furikaeDate = ss > 2 ? v.date : furikaeDate;
       v.date1 = v.date;
       v.date = furikaeDate;
+      v.duration = v.duration ? v.duration : 1;
     }
     return v;
   });

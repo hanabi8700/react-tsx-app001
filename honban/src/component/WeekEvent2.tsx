@@ -1,6 +1,8 @@
 import * as calc from '~/CalenderLib';
 import { HolidayList } from '../pages/Rokuyo';
 import { stockedDaysType } from '~/CalenderStack';
+import { DataEventsType } from '../pages/ServerAccess'; //interface
+
 // import { useState } from 'react';
 
 export interface EventType {
@@ -28,11 +30,12 @@ const debug9 = false;
 // const numRandom = () => Math.floor(Math.random() * 1000) + 1;
 
 //-----------------------------------------------------
-//同じ日付ごとをstockedDays[月]を基に配列（週間）に集める
+//同じ日付ごとをweekDaysArray[1週]を基にstockedDaysを配列（週間）に集める
 //result:
 //oneWeekData[[{Date0a},{Date0b}...{Date0e}],[{Date1a}],...[{Date7a}]]
 //oneWeekData=[[日],[月],[火],[水],[木],[金],[土]] =
 //[Array(0), Array(1), Array(2), Array(3), Array(0), Array(0), Array(1)]
+//oneWeekData:[[un,un,un,un,409101,725401,un],...  []] //[[日],...[土]]
 //----------------------------------------------------
 //表示する１週間にまとめる
 
@@ -57,7 +60,7 @@ export const WeekEvent3 = (
     oneWeekDataStack.push(dobj ? (dobj?.stack as []) : []);
     oneWeekData.push(dobj ? (dobj?.state as []) : []);
   }
-  //oneWeekData:[[un,un,un,un,409101,725401,un],...  []]
+  //oneWeekData:[[un,un,un,un,409101,725401,un],...  []] //[[日],...[土]]
   // debug9 && console.log('datalist', oneWeekData, oneWeekDataStack);
   return [oneWeekData, oneWeekDataStack];
 };
@@ -73,23 +76,24 @@ export const WeekEvent3 = (
 // const stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
 const weekEvent = (
   ctDate: string, //カレンダー月のはじめ
-  weeksNum: number,
+  weeksNum: number, // 週0..
   dataEvent: EventType2[],
   dataHoliday: HolidayList2[],
   stockedDays: stockedDaysType[],
   count = 1, //行数
 ) => {
-  const weekdayArray = calc.getWeekDay7(ctDate, weeksNum); //oneWeek
+  const weekdayArray = calc.getWeekDay7(ctDate, weeksNum); //Get oneWeek
   const [oneWeekData, oneWeekDataStack] = WeekEvent3(weekdayArray, stockedDays);
-  //同じ日付ごとをstockedDays[月]を基に配列（週間）に集める
+  //同じ日付ごとをweekDaysArray[1週]を基にstockedDaysを配列（週間）に集める
   //oneWeekData=[[日],[月],[火],[水],[木],[金],[土]]
   //=[Array(2), Array(0), Array(0), Array(1), Array(2), Array(1), Array(0)]
   //=[[日1,...日n],[月1,...月n],...[土1,...土n]]
   //1行目に祝日あり？
 
   const output: JSX.Element[][] = [];
-
-  debug9 && console.log('始めWeeklyEvent...Start', weekdayArray[0]);
+  //console.log('stockedDays', stockedDays)
+  debug9 && console.log('*** 始めWeeklyEvent...Start', weekdayArray[0]);
+  debug9 && console.log('始めDATE', weekdayArray[0].date);
   debug9 && console.log('oneWeekData', oneWeekData, oneWeekDataStack);
   for (let i = 0; i < count; i++) {
     //count Max行数By週間
@@ -97,20 +101,26 @@ const weekEvent = (
     //日[縦枠]ごとにを週間[横枠]ごとに変更すること
     const oneRowData: number[] = calc.getRow2DimArray(oneWeekData, i);
     const oneRowDataStack: number[] = calc.getRow2DimArray(oneWeekDataStack, i);
-    //１行分aa=[日i,月i,火i,水i,木i,金i,土i]*count
+    // １行分aa=[日i,月i,火i,水i,木i,金i,土i]*count
+    // １行分のoneRowDataから実データ(dataEvent,dataHoliday)を集める
     const aa = oneRowData.map((d, index) => {
       debug9 && console.log('行番号', i, d, oneRowDataStack[index]);
       if (d === undefined) return d;
-      const tt = Math.floor(d / 100);
+      const tt = Math.floor(d / 100); //id抽出
       const aa1 = dataEvent.find((v) => v.id === tt);
       const aa2 = dataHoliday.find((v) => v.id === tt);
       const aa3 = aa1 ? aa1 : aa2 ? aa2 : undefined;
       // debug9 && console.log('index:', weekdayArray[index].date, aa3);
       return aa3;
     });
+    // const resultFilter = aa.filter((d) => {
+    //   return d && d.duration! <= 0;
+    // });
+    // console.log('resultFilter', resultFilter);
     const aa1: (EventType2 | HolidayList2)[] = calc.deepCloneObj(aa);
     //------------------------------------------------------------------
-    //週間[横枠]ごとにしたデーターに色を付けるUndefinedにも表示するように変換する
+    //aa1週間[横枠]ごとにしたデーターに色を付ける
+    // 横枠のデータが無いUndefinedにも表示するように変換する
     const bb = aa1.map((d, index) => {
       if (d && d.backgroundColor === 'None') {
         d.backgroundColor = 'rgba(0, 0, 128, 0.3)';
@@ -118,13 +128,14 @@ const weekEvent = (
         d = {
           //定義されていません、作成する
           // duration: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-          title: 'd',
           date: weekdayArray[index].date,
+          title: '・',
           duration: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
         };
       }
-      //----------第一日目のみその他はundefined--- aa[]! はnull拒否 ----------
+      //-----第一日目のみ,その他はundefined--- aa[]! はnull拒否 ---
+
       d.duration = d.duration ? d.duration : 1;
       let aduration = 1;
       if (aa[index] !== undefined) {
@@ -132,10 +143,13 @@ const weekEvent = (
       }
 
       if (index === 0 && d.date && d.date !== weekdayArray[index].date) {
-        //日曜日で先週からの継続を処理
+        //日曜日で先週からの継続を処理 Diff(From,To)
         let dayCount = calc.getDateDiff(d.date, weekdayArray[index].date);
+        //console.log('date,weekdate', d.date, weekdayArray[index].date);
+
         dayCount = dayCount < 0 ? 0 : dayCount;
         d.duration = aduration - dayCount < 7 ? aduration - dayCount : 7;
+        //console.log('duratin', d.duration, aduration, dayCount);
         return d;
       }
       if (d.date === weekdayArray[index].date) {
@@ -143,15 +157,20 @@ const weekEvent = (
         d.duration = 7 - index > aduration ? aduration : 7 - index;
         return d;
       }
+      //Duration>=2日目以上の下
+      d.duration = 0;
+      debug9 && console.log('undef', d, weekdayArray[index].date);
 
-      return undefined;
+      return d;
+      // return undefined;
     });
-    debug9 && console.log(' bb:', bb);
+
+    debug9 && console.log('行番号 bb:', i, bb);
     //週間[横枠]ごとにしたらHTMLマークアップ言語に変換する
     for (let i = 0; i < bb.length; i++) {
       if (bb[i] !== undefined) {
         const d = bb[i] as EventType2 | HolidayList2;
-        d.duration = d.duration ? d.duration : 1;
+        d.duration = d.duration ? d.duration : 0;
         const title = d.title ? d.title : d.name;
         const lengthOut = 'calc(' + (100 / 7) * d.duration + '%)';
         const output2 = (
@@ -183,7 +202,7 @@ const weekEvent = (
 type Props = {
   ctDate: string; //カレンダー月のはじめ
   weekNumber: number; //カレンダー週番号
-  dataEvent: [];
+  dataEvent: DataEventsType[];
   dataHoliday: HolidayList2[];
   stockedDays: stockedDaysType[]; //並び
   rowMax: number;

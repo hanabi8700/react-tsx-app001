@@ -1,14 +1,16 @@
 // import * as calc from '~/CalenderLib';
-import { HolidayList } from '../pages/Rokuyo';
 import WeekEvent2 from './WeekEvent2';
 import WeekDayFg from './WeekDayFg';
 import WeekDayBg from './WeekDayBg';
-import { stockedDaysType } from '~/CalenderStack';
+import { stockedDaysType } from '~/CalenderStack'; //type
+import { HolidayList } from '../pages/Rokuyo'; //interface
+import { DataEventsType } from '../pages/ServerAccess'; //interface
+
 //rsf
 interface Props {
   ctDate: string;
   weeksNum: number;
-  dataEvent: [];
+  dataEvent: DataEventsType[];
   holidayArray: HolidayList[];
   stockedDays: stockedDaysType[];
 }

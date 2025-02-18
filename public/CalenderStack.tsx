@@ -12,6 +12,17 @@ export type stockedDaysType = {
   state: number[];
   // duration: number[];
 };
+// ---------------------------------------
+// カレンダースタック追加 => stockedDays[]
+// dataset:holidayArray or dataEvent を基にorder:30以上で
+// {data:string,id:number,duration:number,order:number}が必要です
+// stockedDays = CalenderStack(holidayArray, stockedDays, true, true); //初期化伴う
+// stockedDays = CalenderStack(dataEvent, stockedDays); //並び替え
+// 返値：
+// {date,stack,state} : stateはid*100+duration(継続10場合1.2.3...10)
+// {"date": "2025/02/01","stack": [1,1,1,1,1],"state": [288501,755201,823801,779601,592501]}
+// ---------------------------------------
+const debug8 = false;
 const debug9 = false;
 export const CalenderStack = (
   dataset: dataset[],
@@ -25,11 +36,14 @@ export const CalenderStack = (
   for (const obj1 of dataset) {
     // const k = numRandom();
     if (obj1.order > 29) {
+      // ２９以下は六曜などで無視
+      // １４日分はその分日付を追加、StatにID+J、Stackに占有表示
       for (let i = 0, j = obj1.duration ? obj1.duration : 1; i < j; i++) {
         const date3 = calc.getDateWithString(calc.stringToDate(obj1.date, i));
         const kvStack = stockedDays.find((data) => data.date === date3);
-
+        // Stackに既存?
         if (!kvStack) {
+          // stockedDaysに同日がないので新規登録
           stockedDays.push({
             date: date3, //Date
             stack: [i + 1], //Duration
@@ -38,10 +52,12 @@ export const CalenderStack = (
           });
         } else {
           if (initial2) {
+            // kvStack=stockedDays:特定の日のカレンダースタック追加(前から)
             kvStack.stack.unshift(i + 1);
             kvStack.state.unshift((obj1.id as number) * 100 + j);
             // kvStack.duration.unshift(j);
           } else {
+            // 特定の日のカレンダースタック空いてるStat=undefinedを探し追加
             // kvStack.stack.push(i + 1);
             // kvStack.duration.push(j);
             const findindex = kvStack.state.findIndex((d) => d === undefined);
@@ -54,9 +70,9 @@ export const CalenderStack = (
               : (kvStack.stack[findindex] = i + 1);
             debug9 &&
               console.log(
-                '-1:push,N:Insert>>',
-                kvStack.state,
+                '特定の日に-1:追加,N(undef):挿入>>',
                 findindex,
+                kvStack.state,
                 kvStack.date,
               );
             //
@@ -65,11 +81,15 @@ export const CalenderStack = (
       }
     }
   }
+  debug8 &&
+    console.log('stockedDays', stockedDays, 'initial', initial, initial2);
   CalenderStack1(stockedDays); //破壊的配置換え
   return stockedDays;
 };
-
-//並び替え stockedDaysの並び替え（破壊的）stockedDays[].state
+// --------------------------------------------------------------
+// 並び替え stockedDaysの並び替え（破壊的）stockedDays[].state
+// DurationがあるState:IDに対して日毎の場所をそろえる
+// --------------------------------------------------------------
 const CalenderStack1 = (stockedDays: stockedDaysType[]) => {
   debug9 && console.log('stockedDaysの並び替え....');
   const memory: number[] = [];
@@ -105,7 +125,8 @@ const CalenderStack1 = (stockedDays: stockedDaysType[]) => {
           //   index,
           //   max,
           // );
-          debug9 && console.log('irekae', index,">", max, stockedDays[j].state);
+          debug9 &&
+            console.log('narabikae', index, '>', max, stockedDays[j].state);
           if (index == -1 || index > max) break;
           stockedDays[j].state = calc.replaceArrayElements(
             stockedDays[j].state,
@@ -119,7 +140,7 @@ const CalenderStack1 = (stockedDays: stockedDaysType[]) => {
           );
           debug9 &&
             console.log(
-              'irekaeGO',
+              'narabikaeGO',
               stockedDays[j].state,
               index,
               max,

@@ -120,14 +120,15 @@ export const Holiday21 = (
           result2.push({
             date: calc.getDateWithString(date),
             name: data[13],
+            holiday: holi,
+            order: result.type * 10 + Number(data[14][1]), //(3xx)
+            type: 'Holiday',
             option:
               array1[0] || result.type == 302
                 ? result.data010 * 100 + (index % (array1[0] ? array1[0] : 100))
                 : result.data010 + index * 100,
-            order: result.type * 10 + Number(data[14][1]), //(3xx)
             option1: Number(data[14]),
-            type: 'Holiday',
-            holiday: holi,
+            duration: 1,
             backgroundColor: 'None',
           });
         });
@@ -149,11 +150,12 @@ export const Holiday21 = (
           result2.push({
             date: calc.getDateWithString(date),
             name: data[13],
-            option: result.data010,
-            order: result.type * 10 + Number(data[14][1]), //(4xx)
-            option1: Number(data[14]),
-            type: 'Holiday',
             holiday: holi,
+            order: result.type * 10 + Number(data[14][1]), //(4xx)
+            type: 'Holiday',
+            option: result.data010,
+            option1: Number(data[14]),
+            duration: 1,
             backgroundColor: 'None',
           });
         });
@@ -246,10 +248,11 @@ const frikaeHoliday = (holidayLists: HolidayList[]) => {
         result3.push({
           date: dtStr0,
           name: '振替休日',
-          option: 0,
           order: 3400, //(34xx)
           type: 'Holiday',
           holiday: true,
+          option: 0,
+          duration: 1,
           backgroundColor: 'None',
         });
       }
@@ -310,10 +313,11 @@ const kokuminHoliday = (
         result4.push({
           date: calc.getDateWithString(dt1),
           name: '国民の休日',
-          option: 0,
+          holiday: true,
           order: 3405, //(34xx)
           type: 'Holiday',
-          holiday: true,
+          option: 0,
+          duration: 1,
           backgroundColor: 'None',
         });
       }

@@ -1,10 +1,20 @@
 //
 import * as calc from '~/CalenderLib';
-import { HolidayList } from './Rokuyo';
+//import { HolidayList } from './Rokuyo'; //interface
 import { Holiday2 } from './Holiday2';
 import { BirthDay } from './BirthDay';
 import { EventDataGet } from './EventDataGet';
-import { stockedDaysType, CalenderStack } from '~/CalenderStack';
+// import { stockedDaysType, CalenderStack } from '~/CalenderStack';
+export type DataEventsType = {
+  date: string;
+  title: string;
+  id: number;
+  order: number;
+  duration: number;
+  start: string;
+  shuitem: string;
+  backgroundColor: string;
+};
 
 //-----------------------------------------------------
 //サーバーへアクセス Get
@@ -12,14 +22,14 @@ import { stockedDaysType, CalenderStack } from '~/CalenderStack';
 //
 const debug8 = false;
 const debug9 = false;
-let stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
+// let stockedDays: stockedDaysType[] = []; //各日のイベント専有状態
 const numRandom = () => Math.floor(Math.random() * 10000) + 1; //ランダム数値
 export const ServerAccess = (
   calendarDates: calc.ObjectLiteralLike0,
   calendarDateStr: string,
   lastDateDay: Date,
-  holidayArray: HolidayList[],
-) => {
+  holidayArray: any[],//HolidayList[],
+): [any, any] => {
   //------------------------
   //通信データー取得範囲
   // console.log(holidayArray);
@@ -60,7 +70,7 @@ export const ServerAccess = (
     //祝日設定された情報取得した後の祝日など計算....解析(%M,%Y,%N)
     // 5, 5, 12, こどもの日, 301;
     const specialHolidayTxt = decodeShiftJis(dataObj2.data);
-    const result4: HolidayList[] = Holiday2(
+    const result4: any[] = Holiday2(
       specialHolidayTxt,
       calendarDateStr,
       true,
@@ -83,18 +93,18 @@ export const ServerAccess = (
     // console.log('resultObj3:', resultObj3);
     //'resultObj3:'[{…}, {…}, {…}, {…}, {…}, {…}]
     //特別記念日など取得....解析(%M,%Y,%N)
-    const result5 = BirthDay(resultObj3, calendarDateStr);
+    const result5 = BirthDay(resultObj3, calendarDateStr) as any[];
     debug8 && console.log('result5_BirSource', resultObj3);
     debug8 && console.log('result5_BirthDay', result5);
     holidayArray = holidayArray.concat(result5); //配列結合シャローコピー
   }
-  for (const element of holidayArray) {
-    element.id = numRandom(); //ID設定
-    //element.order = element.order ? element.order : 1101;
-    //element.date = calc.getDateWithString(new Date(element.start as string));
+  if (dataObj2.data && dataObj3.data) {
+    for (const element of holidayArray) {
+      element.id = numRandom(); //ID設定
+    }
   }
-  calc.dateSort(holidayArray, ['date', 'order']); //Sort
-  stockedDays = CalenderStack(holidayArray, stockedDays, true, true); //初期化伴う
+  // calc.dateSort(holidayArray, ['date', 'order']); //Sort
+  // stockedDays = CalenderStack(holidayArray, stockedDays, true, true); //初期化伴う
   ///////////////////////////////////////////////
   //------------------------
   // 通信 DataEvent
@@ -109,7 +119,9 @@ export const ServerAccess = (
   //********** */
   //通信OK？
   //********** */
+
   let dataEvent = [];
+  // let dataEvent: DataEventsType[] = [];
   if (dataObj.data) {
     //ダウンロードしたデーター
     dataEvent = calc.deepCloneObj(dataObj.data); //DeepCopy
@@ -128,15 +140,16 @@ export const ServerAccess = (
     //   backgroundColor: 'orange',
     //   start: '2024-09-14T00:00:00+09:00',
     // });
-    stockedDays = CalenderStack(dataEvent, stockedDays); //並び替え
+    // stockedDays = CalenderStack(dataEvent, stockedDays); //並び替え
+    // calc.dateSort(stockedDays, ['date']); //Sort
   }
   //該当クリック日付枠のイベントを検索
-  calc.dateSort(stockedDays, ['date']); //Sort
-  debug8 && console.log('Calendar-stockedDays:', stockedDays);
+  // debug8 && console.log('Calendar-stockedDays:', stockedDays);
   debug8 && console.log('Calendar-holidayArray:', holidayArray);
   debug8 && console.log('Calendar-dataEvent:', dataEvent);
   //
-  return [stockedDays, dataEvent, holidayArray];
+  return [dataEvent, holidayArray];
+  // return [stockedDays, dataEvent, holidayArray];
 };
 //------------------------
 // 通信サーバー
